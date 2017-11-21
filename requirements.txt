@@ -1,0 +1,13 @@
+Werkzeug
+Jinja2
+Pillow
+Flask
+SQLAlchemy
+Flask-HTTPAuth
+itsdangerous
+oauth2client
+redis
+passlib[argon2]
+validate_email
+httplib2
+requests

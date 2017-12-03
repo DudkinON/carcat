@@ -1,0 +1,8 @@
+<div class="offset-3 col-lg-9" ng-controller="UserProfileController as UserProfileController">
+    <div class="col-lg-3">
+        <img src="{{UserProfileController.user.picture}}" alt="">
+    <h4 class="card-title">Profile</h4>
+        <h6>{{UserProfileController.user.first_name}} {{UserProfileController.user.last_name}}</h6>
+        <a href="mailto:{{UserProfileController.user.email}}">email</a>
+    </div>
+</div>

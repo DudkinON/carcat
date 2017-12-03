@@ -1,0 +1,16 @@
+<div class="col-sm-12 offset-3 col-lg-6 text-center pb-5 pt-5" ng-controller="RegisterController as RegisterController">
+    <h4 class="card-title">Sign up</h4>
+    <flash-message></flash-message>
+    <div field data-id="email" data-type="email" data-labeltext="email" data-errortext="enter email"></div>
+    <div field data-id="username" data-type="text" data-labeltext="username" data-errortext="enter username"></div>
+    <div field data-id="first_name" data-type="text" data-labeltext="first name" data-errortext="enter first name"></div>
+    <div field data-id="last_name" data-type="text" data-labeltext="last name" data-errortext="enter last name"></div>
+    <div field data-id="password" data-type="password" data-labeltext="password" data-errortext="enter a password"></div>
+    <div field data-id="conf-password" data-type="password" data-labeltext="confirm password"
+         data-errortext="passwords don't match"></div>
+    <div>
+        <button type="submit" class="mdl-button mdl-js-button" id="sign-up">sign up</button>
+        <div id="p2" class="mdl-progress mdl-js-progress mdl-progress__indeterminate hide"></div>
+    </div>
+
+</div>

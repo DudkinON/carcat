@@ -9,6 +9,7 @@ from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import BadSignature, SignatureExpired
 from data_control import get_unique_str
+from os import remove as remove_file
 
 Base = declarative_base()  # initialisation the database
 secret_key = get_unique_str(32)  # create secret_key
@@ -254,6 +255,21 @@ def get_user_by_id(uid):
     :return return:
     """
     return session.query(User).filter_by(id=uid).one()
+
+
+def update_user_photo(photo, uid):
+    """
+    Update user photo
+
+    :param photo:
+    :param uid:
+    :return object:
+    """
+    user = get_user_by_id(uid)
+    if user.picture != '/img/no-img.png':
+        remove_file(str(user.picture))
+    user.update(picture=photo)
+    return user
 
 
 def update_user(usr):

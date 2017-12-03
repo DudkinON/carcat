@@ -1,0 +1,10 @@
+<div ng-controller="MainController as main" class="row">
+    <div ng-repeat="item in main.items" class="col-sm-6 col-lg-4">
+        <span class="tumbl-image" data-image="{{item.image}}" foo></span>
+        <div class="pt-2 text-center">{{ item.title }} - {{ item.description }}</div>
+        <div class="pt-2">
+            <a ng-href="mailto:{{ item.author.email }}" class="mail-to"><i class="fa fa-envelope-o" aria-hidden="true"></i></a>
+            <span>{{ item.author.first_name }} {{ item.author.last_name }}</span>
+            </div>
+        </div>
+</div>

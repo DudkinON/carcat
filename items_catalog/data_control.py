@@ -7,6 +7,11 @@ from string import ascii_uppercase as uppercase, digits
 from os import path as os_path
 
 
+def allowed_file(filename, extensions):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in extensions
+
+
 def email_is_valid(email):
     """
     Check email is valid

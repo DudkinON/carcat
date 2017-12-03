@@ -1,0 +1,21 @@
+<div class="offset-3 col-lg-6 text-center pt-5 pb-5" ng-controller="LoginController as LoginController">
+
+    <h4 class="card-title">Sign in</h4>
+    <flash-message></flash-message>
+    <div id="login-box">
+        <div data-id="email" data-type="email" data-labeltext="email" data-errortext="enter email" field></div>
+        <div data-id="password" data-type="password" data-labeltext="Password" field></div>
+        <div id="buttons">
+            <button type="submit" class="mdl-button mdl-js-button" id="sign-in">sign in</button>
+            <span> | </span>
+            <a class="mdl-button mdl-js-button" ng-href="/register">sign up</a>
+            <hr>
+            <div class="h6 upper pb-2">or sign in with:</div>
+            <a class="soc-link" href="" ng-click="LoginController.FBLogin()"><i class="fa fa-facebook" aria-hidden="true"></i></a>
+            <a class="soc-link" href="" ng-click="LoginController.GoogleLogin()"><i class="fa fa-google" aria-hidden="true"></i></a>
+            <div id="fb-root"></div>
+
+        </div>
+        <div id="p2" class="mdl-progress mdl-js-progress mdl-progress__indeterminate hide"></div>
+    </div>
+</div>

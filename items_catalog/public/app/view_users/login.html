@@ -8,13 +8,16 @@
         <div id="buttons">
             <button type="submit" class="mdl-button mdl-js-button" id="sign-in">sign in</button>
             <span> | </span>
-            <a class="mdl-button mdl-js-button" ng-href="/register">sign up</a>
+            <a class="mdl-button mdl-js-button" data-ng-href="/register">sign up</a>
             <hr>
             <div class="h6 upper pb-2">or sign in with:</div>
-            <a class="soc-link" href="" ng-click="LoginController.FBLogin()"><i class="fa fa-facebook" aria-hidden="true"></i></a>
-            <a class="soc-link" href="" ng-click="LoginController.GoogleLogin()"><i class="fa fa-google" aria-hidden="true"></i></a>
+            <a class="soc-link" href="" data-ng-click="LoginController.FBLogin()">
+                <i class="fa fa-facebook" aria-hidden="true"></i>
+            </a>
+            <a class="soc-link" href="" data-ng-click="LoginController.GoogleLogin()">
+                <i class="fa fa-google" aria-hidden="true"></i>
+            </a>
             <div id="fb-root"></div>
-
         </div>
         <div id="p2" class="mdl-progress mdl-js-progress mdl-progress__indeterminate hide"></div>
     </div>

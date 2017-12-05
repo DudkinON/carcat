@@ -49,10 +49,31 @@
     app.factory('auth', ['$base64', '$http', function ($base64, $http) {
         return {
             query: function (url, token, success) {
-                var credentials = $base64.encode(token + ':');
+                var credentials = '';
+                if (token.indexOf(':') > -1) {
+                    credentials = $base64.encode(token)
+                } else {
+                    credentials = $base64.encode(token + ':');
+                }
+
                 return $http({
                     method: 'GET',
                     url: url,
+                    headers: {'Authorization': 'Basic ' + credentials}
+                }).then(success);
+            }
+        }
+    }]);
+
+    // TODO: authPOST
+    app.factory('authPOST', ['$base64', '$http', function ($base64, $http) {
+        return {
+            query: function (url, data, token, success) {
+                var credentials = $base64.encode(token + ':');
+                return $http({
+                    method: 'POST',
+                    url: url,
+                    data: data,
                     headers: {'Authorization': 'Basic ' + credentials}
                 }).then(success);
             }
@@ -81,6 +102,7 @@
             '\t</div>\n' +
             '</div>');
     });
+
 
     // TODO: init facebook api
     window.fbAsyncInit = function () {
@@ -135,7 +157,7 @@
     });
 
     // TODO: Login controller
-    app.controller('LoginController', function ($resource, $scope, $window, $http, Flash, $base64, User) {
+    app.controller('LoginController', function ($resource, $scope, $window, $http, auth, Flash, $base64, User) {
 
         // init form
         var err = false;
@@ -167,6 +189,7 @@
                                 user.put("picture", data.picture);
                                 user.put("uid", data.uid);
                                 user.put("full_name", data.full_name);
+                                user.put("status", data.status);
                                 toggle();
                                 $scope.alert('Success login as ' + data.full_name, 'success');
 
@@ -215,6 +238,7 @@
                             user.put("token", result.data.token);
                             user.put("picture", result.data.picture);
                             user.put("uid", result.data.uid);
+                            user.put("status", result.data.status);
                             user.put("full_name", result.data.full_name);
 
                             toggle();
@@ -294,29 +318,22 @@
 
             // submit form data
             if (!err) {
-                var credentials = $base64.encode(form.email + ':' + form.password);
+                var credentials = form.email + ':' + form.password;
+                auth.query(uri('/token'), credentials, function (res) {
 
-                var getToken = $resource(uri('/token'), null, {
-                    query: {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': 'Basic ' + credentials
-                        }
-                    }
-                });
-                getToken.get({}, function (data) {
-                    if (data.token !== undefined) {
-                        user.put("email", form.email);
-                        user.put("credentials", credentials);
-                        user.put("picture", data.picture);
-                        user.put("token", data.token);
-                        user.put("uid", data.uid);
-                        user.put("full_name", data.full_name);
+                    if (res.data.token !== undefined) {
+                        user.put("email", res.data.email);
+                        user.put("picture", res.data.picture);
+                        user.put("token", res.data.token);
+                        user.put("status", res.data.status);
+                        user.put("uid", res.data.uid);
+                        user.put("full_name", res.data.full_name);
                         resetData();
-                        $scope.alert('Success login as ' + data.full_name, 'success');
+                        $scope.alert('Success login as ' + res.data.full_name, 'success');
 
                         var loginBox = $('#login-box');
-                        loginBox.html('<a href="/profile" class="mdl-button mdl-js-button">profile</a>');
+                        loginBox.html('<a href="/profile" ' +
+                            'class="mdl-button mdl-js-button">go to profile?</a>');
                     } else {
                         resetPassword();
                         $scope.alert('Incorrect email or password', 'danger');
@@ -460,6 +477,7 @@
                         user.put("full_name", data.full_name);
                         user.put("email", form.email);
                         user.put("password", form.password);
+                        user.put("status", "user");
                         resetData();
                         $scope.alert(data.message, 'success');
                         $window.location.href = '/login';
@@ -480,25 +498,34 @@
     });
 
     // TODO: Profile controller
-    app.controller('ProfileController', function ($base64, $window, FileUploader, User) {
+    app.controller('ProfileController', function ($base64, $window, FileUploader, authPOST, User) {
         var user = User;
         var $scope = this;
-        $scope.error = false;
-        if (user.info().size < 1) {
-            $window.location.href = '/';
-        }
+        var $rootScope = angular.element(document.querySelector('[ng-app="app"]')).scope();
 
+        // Check user is logged in
+        if (user.info().size < 1) {$window.location.href = '/';}
+
+        // Define scope
+        $scope.error = false;
+        $scope.admin = false;
+        $scope.category = false;
+        $scope.brands = $rootScope.menu;
+        $scope.car = {};
         $scope.addedPhoto = false;
+
+        // Define admin status
+        if (user.get("status") === "admin") $scope.admin = true;
 
         var credentials = $base64.encode(user.get("token") + ':');
         var uploader = $scope.uploader = new FileUploader({
             method: 'POST',
             url: uri('/profile/edit/photo/' + user.get("uid")),
-            headers: {'Authorization': 'Basic ' + credentials}
+            headers: {'Authorization': 'Basic ' + credentials},
+            autoUpload: true
         });
 
-        // FILTERS
-
+        // filters
         uploader.filters.push({
             name: 'imageFilter',
             fn: function(item /*{File|FileLikeObject}*/, options) {
@@ -509,54 +536,56 @@
 
         uploader.onWhenAddingFileFailed = function(item /*{File|FileLikeObject}*/, filter, options) {
             $scope.addedPhoto = false;
-            console.info('onWhenAddingFileFailed', item, filter, options);
+            $scope.error = "Error file format";
         };
         uploader.onAfterAddingFile = function(fileItem) {
             $scope.addedPhoto = true;
-            console.info('onAfterAddingFile', fileItem);
-        };
-        uploader.onAfterAddingAll = function(addedFileItems) {
-            $scope.addedPhoto = true;
-            console.info('onAfterAddingAll', addedFileItems);
-        };
-        uploader.onBeforeUploadItem = function(item) {
-            console.info('onBeforeUploadItem', item);
-        };
-        uploader.onProgressItem = function(fileItem, progress) {
-            console.info('onProgressItem', fileItem, progress);
-        };
-        uploader.onProgressAll = function(progress) {
-            console.info('onProgressAll', progress);
         };
         uploader.onSuccessItem = function(fileItem, response, status, headers) {
-            if (status === 204) {
-                console.log(response)
-                // user.put("picture", response.picture);
-            } else if (status === 200) {
+            if (response.error) {
                 $scope.error = response.error;
+            } else {
+                user.put("picture", response.picture);
+                $scope.addedPhoto = false;
             }
-            console.info('onSuccessItem', fileItem, response, status, headers);
         };
         uploader.onErrorItem = function(fileItem, response, status, headers) {
-            console.info('onErrorItem', fileItem, response, status, headers);
-        };
-        uploader.onCancelItem = function(fileItem, response, status, headers) {
-            console.info('onCancelItem', fileItem, response, status, headers);
-        };
-        uploader.onCompleteItem = function(fileItem, response, status, headers) {
-            console.info('onCompleteItem', fileItem, response, status, headers);
-        };
-        uploader.onCompleteAll = function() {
-            console.info('onCompleteAll');
+            $scope.error = "Error upload a photo";
         };
 
-        console.info('uploader', uploader);
+
+        $scope.addCategory = function () {
+            category = $('#category');
+            console.log(category.val());
+            if (category.val() && category.val().length > 2) {
+                $scope.error = false;
+                var data = {"name": category.val()};
+                authPOST.query(uri('/category/new'), data, user.get("token"), function (menu) {
+
+                    $rootScope.menu = menu.data;
+                    category.val('');
+                })
+            } else {
+                $scope.error = "too short name of category minimum 3 characters";
+            }
+        };
 
 
+
+        $scope.addCar = function (car) {
+            if ($scope.brands.indexOf(car.brand) > - 1) {
+                $scope.error = false;
+
+            } else {
+                $scope.error = "Unknown " + car.brand + " brand";
+            }
+            console.log(car);
+        }
     });
 
     // TODO: Get user profile controller
-    app.controller('UserProfileController', function ($routeParams, $resource, $base64, User, auth) {
+    app.controller('UserProfileController',
+        function ($routeParams, $resource, $base64, User, auth) {
         var userData = this;
         userData.user = {};
         this.uid = $routeParams.uid;
@@ -565,7 +594,6 @@
             console.log(userData.user);
         };
         auth.query(uri('/profile/' + this.uid), User.get('token'), success);
-
 
     });
 
@@ -599,6 +627,9 @@
             label.className = "mdl-textfield__label label-color";
             input.setAttribute("id", attrs.id);
             input.setAttribute("type", attrs.type);
+            if (typeof attrs.model !== 'undefined') {
+                input.setAttribute("ng-model", attrs.model);
+            }
             label.setAttribute("for", attrs.id);
             label.appendChild(document.createTextNode(attrs.labeltext));
             div.appendChild(input);

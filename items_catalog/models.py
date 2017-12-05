@@ -9,7 +9,8 @@ from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import BadSignature, SignatureExpired
 from data_control import get_unique_str
-from os import remove as remove_file
+from settings import *
+
 
 Base = declarative_base()  # initialisation the database
 secret_key = get_unique_str(32)  # create secret_key
@@ -103,7 +104,8 @@ class User(Base):
             'picture': self.picture,
             'first_name': self.first_name,
             'last_name': self.last_name,
-            'email': self.email
+            'email': self.email,
+            'status': self.status
         }
 
 
@@ -200,10 +202,7 @@ def user_exist(username):
     :param username:
     :return bool:
     """
-    if session.query(User).filter_by(username=username).first() is not None:
-        return True
-    else:
-        return False
+    return session.query(User).filter_by(username=username).first() is not None
 
 
 def get_user_by_email(email):
@@ -267,8 +266,9 @@ def update_user_photo(photo, uid):
     """
     user = get_user_by_id(uid)
     if user.picture != '/img/no-img.png':
-        remove_file(str(user.picture))
-    user.update(picture=photo)
+        os.remove('%s%s' % (BASE_DIR, user.picture))
+    user.picture = photo
+    session.commit()
     return user
 
 
@@ -292,6 +292,16 @@ def remove_user(uid):
     user = session.query(User).filter_by(id=uid).first()
     session.delete(user)
     session.commit()
+
+
+def check_category(name):
+    """
+    Check category name
+
+    :param name:
+    :return bool:
+    """
+    return session.query(Category).filter_by(name=name).first() is None
 
 
 def create_category(name):

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, jsonify, request, abort, g
-from models import create_user, get_user_by_username
+from models import create_user, get_user_by_username, create_category
 from models import create_item, User, get_items_by_category, update_user_photo
-from models import get_categories, get_items, get_user_by_email
+from models import get_categories, get_items, get_user_by_email, check_category
 from models import user_exist, update_user, remove_user, get_user_by_id
 from data_control import email_is_valid, get_unique_str, get_path, allowed_file
-from settings import UPLOAD_FOLDER, EXTENSIONS
+from settings import *
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.utils import secure_filename
 from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
@@ -74,7 +74,8 @@ def login(provider):
         # Check that the access token is valid.
         access_token = credentials.access_token
         url = (
-        'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s' % access_token)
+        'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s' %
+        access_token)
         h = Http()
         result =loads(h.request(url, 'GET')[1])
         # If there was an error in the access token info, abort.
@@ -112,13 +113,15 @@ def login(provider):
                         'last_name': g.user.last_name,
                         'email': g.user.email,
                         'picture': g.user.picture,
+                        'status': g.user.status,
                         'full_name': g.user.get_full_name}), 200
 
     elif provider == 'facebook':
 
         data = request.json.get('data')
         access_token = data['access_token']
-        fb_data = loads(open('facebook.json', 'r').read())['facebook']
+        fb_file = ''.join([BASE_DIR, '/items_catalog/facebook.json'])
+        fb_data = loads(open(fb_file, 'r').read())['facebook']
         app_id = fb_data['app_id']
         app_secret = fb_data['app_secret']
         url = fb_data['access_token_url'] % (app_id, app_secret, access_token)
@@ -178,6 +181,7 @@ def login(provider):
                         'last_name': g.user.last_name,
                         'email': g.user.email,
                         'picture': g.user.picture,
+                        'status': g.user.status,
                         'full_name': g.user.get_full_name}), 200
 
     else:
@@ -209,14 +213,33 @@ def category(category_id):
     return jsonify(items), 200
 
 
+# TODO: Add new category
+@app.route('/category/new', methods=['POST'])
+@auth.login_required
+def add_category():
+    if g.user.status is not 'admin':
+        return jsonify({'error': "You do not have permission to do that"}), 200
+    new_category = clean(request.json.get('name'))
+    if check_category(new_category):
+        create_category(new_category)
+    cats = [item.serialize for item in get_categories()]
+    return jsonify(cats), 200
+
+
 # TODO: Get auth token
 @app.route('/token')
 @auth.login_required
 def get_auth_token():
+    print "headers: "
+    print request.headers
     token = g.user.generate_auth_token()
     return jsonify({'token': token.decode('ascii'),
                     'uid': g.user.id,
                     'picture': g.user.picture,
+                    'first_name': g.user.first_name,
+                    'last_name': g.user.last_name,
+                    'status': g.user.status,
+                    'email': g.user.email,
                     'full_name': g.user.get_full_name})
 
 
@@ -230,7 +253,7 @@ def new_user():
     """
     print request.json
     # Get user data
-    data = clean(request.json.get('data'))
+    data = request.json.get('data')
     username = clean(data.get('username'))
     password = clean(data.get('password'))
     first_name = clean(data.get('first_name'))
@@ -299,10 +322,13 @@ def edit_photo(uid):
     if photo and allowed_file(photo.filename, ALLOWED_EXTENSIONS):
         filename = get_path(filename=secure_filename(photo.filename),
                             folder=app.config['UPLOAD_FOLDER'])
-        photo.save(filename)
+
+        abs_path = '%s%s' % (BASE_DIR, filename)
+        print abs_path
+        photo.save(abs_path)
         user = update_user_photo(filename, g.user.id)
         g.user = user
-        return jsonify(g.user.serialize), 204
+        return jsonify(user.serialize), 200
     else:
         return jsonify({'error', "Can't update user photo"}), 200
 

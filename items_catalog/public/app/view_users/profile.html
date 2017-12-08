@@ -17,8 +17,20 @@
         <h4 class="card-title">Profile</h4>
         <div class="alert alert-danger" role="alert"
              ng-show="ProfileController.error">{{ProfileController.error}}</div>
+        <div class="my-items">
+            <h4 class="h5">My cars</h4>
+            <div class="h6" ng-repeat="item in myCars">
+                <span class="float-right">
+                    <a href="/profile/edit/car/{{item.id}}">
+                        <i class="fa fa-cogs" aria-hidden="true"></i>
+                    </a>
+                </span>
+                <span><a href="/profile/edit/car/{{item.id}}">{{item.title}}</a></span>
+            </div>
+        </div>
+
         <!-- TODO: Add category -->
-        <div class="" ng-show="ProfileController.admin">
+        <div class="add-cat" ng-show="ProfileController.admin">
             <div data-id="category" data-type="text" data-labeltext="add category"
                  data-errortext="write category" data-model="category"
                  class="d-inline" field></div>
@@ -27,40 +39,43 @@
                     data-ng-click="ProfileController.addCategory()">add</button>
             </div>
         </div>
-        <!-- Add category end -->
         
         <!-- TODO: Add new car in catalog -->
-        <div class="">
-            <form action="" class="">
-                <div data-id="title" data-type="text" data-labeltext="title"
-                     data-errortext="write title"
-                     data-model="ProfileController.car.title" field></div>
-                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                    <select class="mdl-textfield__input" id="octane"
-                            ng-model="ProfileController.car.brand" name="octane">
-                        <option></option>
-                        <option value="{{brand.id}}" ng-repeat="brand in ProfileController.brands">{{brand.name}}</option>
+        <div class="add-car">
+            <form id="add-car">
+                <div class="form-group">
+                    <select class="form-control" id="brand"
+                    ng-model="ProfileController.car.brand">
+                        <option value="" disabled selected>brand</option>
+                        <option value="{{brand.id}}"
+                                ng-repeat="brand in ProfileController.brands"
+                        >{{brand.name}}</option>
                     </select>
-
-                    <label class="mdl-textfield__label" for="octane">select brand</label>
                 </div>
-                <div data-id="model" data-type="text" data-labeltext="model"
-                     data-errortext="write model"
-                     data-model="ProfileController.car.model" field></div>
-                <div>
-                    <textarea type="text" rows="6" cols="45"
-                              id="description"
-                              placeholder="description"
-                              ng-model="ProfileController.car.description"></textarea>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="title"
+                           placeholder="Enter title" autocomplete="off"
+                           ng-model="ProfileController.car.title">
                 </div>
-                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                    <input class="mdl-textfield__input" type="text"
-                           pattern="-?[0-9]*(\.[0-9]+)?"
-                           id="price" ng-model="ProfileController.car.price">
-                    <label class="mdl-textfield__label" for="price">price</label>
-                    <span class="mdl-textfield__error">Input is not a number! example: 12900</span>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="model"
+                           placeholder="Enter model" autocomplete="off"
+                           ng-model="ProfileController.car.model">
                 </div>
-                <div class="">
+                <div class="form-group">
+                    <textarea class="form-control" id="description" rows="4"
+                    ng-model="ProfileController.car.description" autocomplete="off"
+                    placeholder="description"></textarea>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input type="number" class="form-control"
+                           aria-label="Amount (to the nearest dollar)"
+                           ng-model="ProfileController.car.price"
+                           autocomplete="off">
+                    <span class="input-group-addon">.00</span>
+                </div>
+                <div class="mb-5 pt-3">
                     <button type="button" class="mdl-button mdl-js-button mdl-js-ripple-effect"
                     data-ng-click="ProfileController.addCar(ProfileController.car)">add new car</button>
                 </div>

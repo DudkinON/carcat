@@ -1,0 +1,58 @@
+<div class="row" ng-controller="ItemController as ItemController">
+  <div class="col-lg-8">
+    <div ng-show="ItemController.car.images.length" class="ng-scope">
+      <div class="img-wrap">
+        <img data-ng-src="{{ItemController.car.images[0].url}}" id="main-image">
+      </div>
+      <div class="img-thumbnails row">
+        <div class="col-2 car-thumbnail"
+             ng-repeat="image in ItemController.car.images">
+          <img data-ng-src="{{image.url}}" alt="{{image.id}}"
+               data-ng-click="ItemController.chooseImg(image)"
+               ng-if="ItemController.currentImg.url !== image.url"
+               class="rounded border inactive-img pointer">
+          <img data-ng-src="{{image.url}}" alt="{{image.id}}"
+               data-ng-click="ItemController.chooseImg(image)"
+               ng-if="ItemController.currentImg.url === image.url"
+               class="rounded border active-img pointer">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <h1 class="h3 mb-5">{{ItemController.car.title}}</h1>
+    <table class="table table-sm">
+      <tbody>
+      <tr class="table-active">
+        <td>brand:</td>
+        <td>
+          <a href="/brand/{{ItemController.car.brand.id}}">
+            <strong>{{ItemController.car.brand.name}}</strong>
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <td>model:</td>
+        <td><strong>{{ItemController.car.model}}</strong></td>
+      </tr>
+      <tr>
+        <td>price:</td>
+        <td><strong>${{ItemController.car.price}}</strong></td>
+      </tr>
+      </tbody>
+    </table>
+    <div class="mt-5">
+      <span>description</span>
+      <hr>
+      <em>{{ItemController.car.title}}</em>
+    </div>
+    <div class="pt-4">
+      <span data-ng-click="ItemController.sendEmail(ItemController.car.author.email)" class="mail-to">
+        <i class="fa fa-envelope-o" aria-hidden="true"></i>
+      </span>
+      <a href="/profile/{{ ItemController.car.author.id }}">
+        {{ ItemController.car.author.first_name }}
+        {{ ItemController.car.author.last_name }}</a>
+    </div>
+  </div>
+</div>

@@ -6,6 +6,7 @@ from models import create_user, get_user_by_username, create_category
 from models import create_item, User, get_items_by_category, update_user_photo
 from models import get_categories, get_items, get_user_by_email, check_category
 from models import user_exist, update_user, remove_user, get_user_by_id
+from models import add_images, get_items_by_user, update_item, get_item_by_id
 from data_control import email_is_valid, get_unique_str, get_path, allowed_file
 from settings import *
 from flask_httpauth import HTTPBasicAuth
@@ -74,10 +75,10 @@ def login(provider):
         # Check that the access token is valid.
         access_token = credentials.access_token
         url = (
-        'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s' %
-        access_token)
+            'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s' %
+            access_token)
         h = Http()
-        result =loads(h.request(url, 'GET')[1])
+        result = loads(h.request(url, 'GET')[1])
         # If there was an error in the access token info, abort.
         if result.get('error') is not None:
             response = make_response(dumps(result.get('error')), 500)
@@ -120,7 +121,7 @@ def login(provider):
 
         data = request.json.get('data')
         access_token = data['access_token']
-        fb_file = ''.join([BASE_DIR, '/items_catalog/facebook.json'])
+        fb_file = ''.join([BASE_DIR, '/facebook.json'])
         fb_data = loads(open(fb_file, 'r').read())['facebook']
         app_id = fb_data['app_id']
         app_secret = fb_data['app_secret']
@@ -191,11 +192,8 @@ def login(provider):
 # TODO: Home page
 @app.route('/')
 def home_page():
-    items = get_items(limit=10)
+    items = get_items(limit=9)
     json = [item.serialize for item in items]
-    print request.headers
-    # print {item.serialize for item in items}
-
     return jsonify(json)
 
 
@@ -217,7 +215,7 @@ def category(category_id):
 @app.route('/category/new', methods=['POST'])
 @auth.login_required
 def add_category():
-    if g.user.status is not 'admin':
+    if g.user.status != 'admin':
         return jsonify({'error': "You do not have permission to do that"}), 200
     new_category = clean(request.json.get('name'))
     if check_category(new_category):
@@ -277,7 +275,8 @@ def new_user():
         return jsonify({'error': 'user already exists'}), 200
 
     # Create a new user
-    user = create_user(username, password, first_name, last_name, email) or None
+    user = create_user(username, password, first_name, last_name,
+                       email) or None
     if user is None:
         return jsonify({'error': 'error create user'}), 200
     g.user = user
@@ -291,7 +290,6 @@ def new_user():
 
 # TODO: Get a profile info by uid
 @app.route('/profile/<int:uid>')
-@auth.login_required
 def profile(uid):
     """
     Return serializable users data
@@ -303,7 +301,14 @@ def profile(uid):
     return jsonify(user.serialize)
 
 
-# TODO: Edit user data
+@app.route('/profile/items')
+@auth.login_required
+def get_user_items():
+    items = [item.serialize for item in get_items_by_user(int(g.user.id))]
+    return jsonify(items), 200
+
+
+# TODO: Edit user photo
 @app.route('/profile/edit/photo/<int:uid>', methods=['POST'])
 @auth.login_required
 def edit_photo(uid):
@@ -313,7 +318,7 @@ def edit_photo(uid):
 
     # check if the post request has the file part
     if 'file' not in request.files:
-        return jsonify({'error': "Server don't get image"})
+        return jsonify({'error': "Server don't get image"}), 206
     photo = request.files['file']
     # if user does not select file, browser also
     # submit a empty part without filename
@@ -324,13 +329,55 @@ def edit_photo(uid):
                             folder=app.config['UPLOAD_FOLDER'])
 
         abs_path = '%s%s' % (BASE_DIR, filename)
-        print abs_path
         photo.save(abs_path)
         user = update_user_photo(filename, g.user.id)
         g.user = user
         return jsonify(user.serialize), 200
     else:
         return jsonify({'error', "Can't update user photo"}), 200
+
+
+# TODO: Add items photos
+@app.route('/item/add/images/<int:uid>/<int:item_id>', methods=['POST'])
+@auth.login_required
+def add_item_images(uid, item_id):
+    images = list()
+
+    # validate numbers
+    try:
+        uid = int(uid)
+        item_id = int(item_id)
+    except ValueError or TypeError:
+        return jsonify({'error': "wrong address"})
+
+    # get user data
+    user_profile = get_user_by_id(uid)
+
+    # check user is owner account
+    if user_profile.id != g.user.id:
+        return jsonify({'error': 'permission denied'}), 403
+
+    # get list of images
+    upload_images = request.files.getlist('file')
+    print request.files
+    print upload_images
+
+    # validate images
+    if upload_images is []:
+        return jsonify({'error': "server didn't get any images"}), 206
+    if len(upload_images) > 10:
+        return jsonify({'error': "too many images, maximum 10"}), 206
+
+    # prepare data for saving
+    for image in upload_images:
+        filename = get_path(filename=secure_filename(image.filename),
+                            folder=app.config['UPLOAD_FOLDER'])
+        abs_path = '%s%s' % (BASE_DIR, filename)
+        image.save(abs_path)
+        images.append(filename)
+    print images
+    item_images = [item.serialize for item in add_images(images, item_id)]
+    return jsonify(item_images), 200
 
 
 # TODO: Edit user data
@@ -372,34 +419,74 @@ def delete_user(uid):
 @app.route('/create/item', methods=['POST'])
 @auth.login_required
 def new_item():
-
-    # Get data
-    title = request.json.get('title')
-    description = request.json.get('description')
-    category = request.json.get('category')
-    author = request.json.get('author')
+    # Get and clean data
+    title = clean(request.json.get('title'))
+    model = clean(request.json.get('model'))
+    description = clean(request.json.get('description'))
+    brand = request.json.get('brand')
+    price = request.json.get('price')
+    author = g.user.id
 
     # Check data
     if len(title) < 5:
         return jsonify({'error': 'too short title, minimum 5 characters'}), 206
+    if len(model) < 2:
+        return jsonify({'error': 'too short model, minimum 2 characters'}), 206
     if len(description) < 5:
         return jsonify({'error': 'too short description, min 5 symbols'}), 206
     try:
-        category = int(category)
-    except Exception as e:
-        return jsonify({'error': 'invalid category'}), 206
-    if category < 1:
-        return jsonify({'error': 'category not found'}), 206
+        brand = int(brand)
+    except TypeError:
+        return jsonify({'error': 'invalid category type'}), 206
     try:
-        author = int(author)
-    except Exception as e:
-        return jsonify({'error': 'invalid author'}), 206
-    if author < 1:
-        return jsonify({'error': 'author not found'}), 206
+        price = int(price)
+    except TabError:
+        return jsonify({'error': 'invalid price type'}), 206
+
+    if brand < 1:
+        return jsonify({'error': 'category not found'}), 206
 
     # Save data
-    item = create_item(title, description, category, author, '/img.jpg')
-    return jsonify({'message': 'Item: %s was added' % item.title}), 201
+    item = create_item(title, description, model, brand, author, price)
+    return jsonify(item.serialize), 200
+
+
+@app.route('/update/item/<int:item_id>', methods=['POST'])
+@auth.login_required
+def edit_item(item_id):
+    print request.json
+    _item = dict()
+    _item['title'] = clean(request.json.get('title'))
+    _item['model'] = clean(request.json.get('model'))
+    _item['description'] = clean(request.json.get('description'))
+    _item['brand'] = request.json.get('brand')
+    _item['price'] = request.json.get('price')
+    _item['author'] = int(g.user.id)
+
+    # Check data
+    if len(_item['title']) < 5:
+        return jsonify({'error': 'too short title, minimum 5 characters'}), 206
+    if len(_item['model']) < 2:
+        return jsonify({'error': 'too short model, minimum 2 characters'}), 206
+    if len(_item['description']) < 5:
+        return jsonify({'error': 'too short description, min 5 symbols'}), 206
+    try:
+        _item['brand'] = int(_item['brand'])
+    except TypeError:
+        return jsonify({'error': 'invalid category type'}), 206
+    try:
+        _item['price'] = int(_item['price'])
+    except TabError:
+        return jsonify({'error': 'invalid price type'}), 206
+
+    item = update_item(_item, item_id)
+    return jsonify(item.serialize), 200
+
+
+@app.route('/item/<int:item_id>')
+def item_page(item_id):
+    item = get_item_by_id(item_id)
+    return jsonify(item.serialize), 200
 
 
 if __name__ == '__main__':

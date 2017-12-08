@@ -170,10 +170,20 @@ class Catalog(Base):
     def get_images(self):
         """
         Prepare list of images for JSON
+
         :return list:
         """
         images = session.query(Image).filter_by(product=self.id).all()
         return [img.serialize for img in images]
+
+    def get_category(self):
+        """
+        Return category
+
+        :return object:
+        """
+        category = session.query(Category).filter_by(id=self.category).first()
+        return category.serialize
 
     @property
     def serialize(self):
@@ -187,7 +197,7 @@ class Catalog(Base):
             'model': self.model,
             'title': self.title,
             'description': self.description,
-            'category': self.category,
+            'brand': self.get_category(),
             'price': self.price,
             'images': self.get_images(),
             'author': self.get_author(),
@@ -265,7 +275,7 @@ def update_user_photo(photo, uid):
     :return object:
     """
     user = get_user_by_id(uid)
-    if user.picture != '/img/no-img.png':
+    if user.picture != '/img/no-img.png' and os.path.isfile(user.picture):
         os.remove('%s%s' % (BASE_DIR, user.picture))
     user.picture = photo
     session.commit()
@@ -349,19 +359,20 @@ def remove_category(category_id):
     session.commit()
 
 
-def create_item(title, description, category, author, image):
+def create_item(title, description, model, category, author, price):
     """
     Create item in catalog
 
     :param title:
     :param description:
+    :param model:
     :param category:
     :param author:
-    :param image:
+    :param price:
     :return object:
     """
-    item = Catalog(title=title, description=description,
-                   category=category, author=author, image=image)
+    item = Catalog(title=title, model=model, description=description,
+                   category=category, author=author, price=price)
     session.add(item)
     session.commit()
     return item
@@ -376,6 +387,16 @@ def get_items(limit, offset=None):
     :return object:
     """
     return session.query(Catalog).offset(offset).limit(limit)
+
+
+def get_items_by_user(uid):
+    """
+    Return list of items by user id
+
+    :param uid:
+    :return object:
+    """
+    return session.query(Catalog).filter_by(author=uid).all() or []
 
 
 def get_items_by_category(category_id, limit, offset=None):
@@ -401,14 +422,16 @@ def get_item_by_id(item_id):
     return session.query(Catalog).filter_by(id=item_id).first()
 
 
-def update_item(item):
+def update_item(item, item_id):
     """
     Update item
 
     :param item:
+    :param item_id:
     :return void:
     """
-    session.query(Catalog).filter_by(title=item['title']).first().update(item)
+    return session.query(Catalog).filter_by(
+        id=item_id).first().update(item)
 
 
 def delete_item(item_id):
@@ -421,6 +444,15 @@ def delete_item(item_id):
     user = session.query(Catalog).filter_by(id=item_id).first()
     session.delete(user)
     session.commit()
+
+
+def add_images(images, item_id):
+    objects = list()
+    for image in images:
+        objects.append(Image(product=item_id, url=image))
+    session.bulk_save_objects(objects)
+    session.commit()
+    return session.query(Image).filter_by(product=item_id).all()
 
 
 Base.metadata.create_all(engine)

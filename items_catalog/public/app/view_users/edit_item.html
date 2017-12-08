@@ -1,0 +1,86 @@
+<div class="row" ng-controller="ItemEditController as ItemEditController">
+  <div class="col-sm-6 col-lg-3">
+    <div class="user-image-container" ng-hide="ItemEditController.addedPhoto">
+      <img src="{{user.get('picture')}}" ng-show="!item._file"
+           alt="{{user.get('full_name')}}" class="rounded-circle user-image">
+    </div>
+    <div class="h5 w-100 mt-3">{{user.get('full_name')}}</div>
+  </div>
+  <div class="col-sm-6 col-lg-9">
+    <h4 class="card-title">Edit car</h4>
+    <div class="alert alert-danger" role="alert"
+         ng-show="ItemEditController.error">{{ItemEditController.error}}
+    </div>
+
+    <!-- TODO: Add new car in catalog -->
+    <div class="add-car">
+      <form id="add-car">
+        <div class="form-group">
+          <input class="form-control" type="text"
+                 placeholder="{{ItemEditController.car.brand.name}}" readonly>
+        </div>
+        <div class="form-group">
+          <input type="text" class="form-control" id="title"
+                 placeholder="Enter title" autocomplete="off"
+                 ng-model="ItemEditController.car.title">
+        </div>
+        <div class="form-group">
+          <input type="text" class="form-control" id="model"
+                 placeholder="Enter model" autocomplete="off"
+                 ng-model="ItemEditController.car.model">
+        </div>
+        <div class="form-group">
+                    <textarea class="form-control" id="description" rows="4"
+                              ng-model="ItemEditController.car.description"
+                              autocomplete="off"
+                              placeholder="description"></textarea>
+        </div>
+        <div class="form-group">
+          <div class="input-group">
+            <span class="input-group-addon">$</span>
+            <input type="number" class="form-control"
+                   aria-label="Amount (to the nearest dollar)"
+                   ng-model="ItemEditController.car.price"
+                   autocomplete="off">
+            <span class="input-group-addon">.00</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <input type="file" class="" nv-file-select=""
+                 uploader="ItemEditController.carUploader" multiple>
+        </div>
+        <div ng-show="ItemEditController.addedPhoto"
+             ng-repeat="item in ItemEditController.carUploader.queue">
+          <div ng-thumb="{ file: item._file, width: 130, height: 130 }"></div>
+        </div>
+        <div class="mb-5 pt-3">
+          <button type="button"
+                  class="mdl-button mdl-js-button mdl-js-ripple-effect"
+                  data-ng-click="ItemEditController.editCar(ItemEditController.car)">
+            save
+          </button>
+        </div>
+      </form>
+      <div class="car-images-container">
+        <div ng-show="ItemEditController.car.images.length" class="ng-scope">
+          <div class="img-wrap">
+            <img data-ng-src="{{ItemEditController.car.images[0].url}}" id="main-image">
+          </div>
+          <div class="img-thumbnails row">
+            <div class="col-2 car-thumbnail"
+                 ng-repeat="image in ItemEditController.car.images">
+              <img data-ng-src="{{image.url}}" alt="{{image.id}}"
+                   data-ng-click="ItemEditController.chooseImg(image)"
+                   ng-if="ItemEditController.currentImg.url !== image.url"
+                   class="rounded border inactive-img pointer">
+              <img data-ng-src="{{image.url}}" alt="{{image.id}}"
+                   data-ng-click="ItemEditController.chooseImg(image)"
+                   ng-if="ItemEditController.currentImg.url === image.url"
+                   class="rounded border active-img pointer">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from flask import Flask, jsonify, request, abort, g
+from flask import Flask, jsonify, request, g
 from models import create_user, get_user_by_username, create_category
 from models import create_item, User, get_items_by_category, update_user_photo
 from models import get_categories, get_items, get_user_by_email, check_category
 from models import user_exist, update_user, remove_user, get_user_by_id
 from models import add_images, get_items_by_user, update_item, get_item_by_id
+from models import delete_item
 from data_control import email_is_valid, get_unique_str, get_path, allowed_file
 from settings import *
 from flask_httpauth import HTTPBasicAuth
@@ -189,9 +190,14 @@ def login(provider):
         return jsonify({'error': 'Unknown provider'}), 200
 
 
-# TODO: Home page
+# TODO: All items
 @app.route('/')
-def home_page():
+def all_items():
+    """
+    Return 9 last added items
+
+    :return string: JSON
+    """
     items = get_items(limit=9)
     json = [item.serialize for item in items]
     return jsonify(json)
@@ -200,6 +206,11 @@ def home_page():
 # TODO: Get categories
 @app.route('/categories')
 def categories():
+    """
+    Return list of categories
+
+    :return string: JSON
+    """
     cats = [item.serialize for item in get_categories()]
     return jsonify(cats), 200
 
@@ -207,7 +218,13 @@ def categories():
 # TODO: Get items by category
 @app.route('/category/<int:category_id>')
 def category(category_id):
-    items = [item.serialize for item in get_items_by_category(category_id, 10)]
+    """
+    Return items by category id
+
+    :param category_id:
+    :return string: JSON
+    """
+    items = [item.serialize for item in get_items_by_category(category_id, 9)]
     return jsonify(items), 200
 
 
@@ -215,11 +232,24 @@ def category(category_id):
 @app.route('/category/new', methods=['POST'])
 @auth.login_required
 def add_category():
+    """
+    Add a new category
+
+    :return string: JSON
+    """
+
+    # check user status
     if g.user.status != 'admin':
         return jsonify({'error': "You do not have permission to do that"}), 200
+
+    # get and clean data
     new_category = clean(request.json.get('name'))
+
+    # check category exist
     if check_category(new_category):
         create_category(new_category)
+
+    # return list of categories
     cats = [item.serialize for item in get_categories()]
     return jsonify(cats), 200
 
@@ -228,8 +258,11 @@ def add_category():
 @app.route('/token')
 @auth.login_required
 def get_auth_token():
-    print "headers: "
-    print request.headers
+    """
+    Return auth token
+
+    :return string: JSON
+    """
     token = g.user.generate_auth_token()
     return jsonify({'token': token.decode('ascii'),
                     'uid': g.user.id,
@@ -247,9 +280,9 @@ def new_user():
     """
     Create a new user
 
-    :return String: (JSON)
+    :return string: JSON
     """
-    print request.json
+
     # Get user data
     data = request.json.get('data')
     username = clean(data.get('username'))
@@ -304,6 +337,11 @@ def profile(uid):
 @app.route('/profile/items')
 @auth.login_required
 def get_user_items():
+    """
+    Return items by user id
+
+    :return string: JSON
+    """
     items = [item.serialize for item in get_items_by_user(int(g.user.id))]
     return jsonify(items), 200
 
@@ -312,6 +350,14 @@ def get_user_items():
 @app.route('/profile/edit/photo/<int:uid>', methods=['POST'])
 @auth.login_required
 def edit_photo(uid):
+    """
+    Update user's photo (avatar)
+
+    :param uid:
+    :return string: JSON
+    """
+
+    # check the user is the owner
     user_profile = get_user_by_id(uid)
     if user_profile.id != g.user.id:
         return jsonify({'error': 'permission denied'}), 403
@@ -320,18 +366,25 @@ def edit_photo(uid):
     if 'file' not in request.files:
         return jsonify({'error': "Server don't get image"}), 206
     photo = request.files['file']
+
     # if user does not select file, browser also
     # submit a empty part without filename
     if photo.filename == '':
         return jsonify({'error': 'No selected file'}), 200
     if photo and allowed_file(photo.filename, ALLOWED_EXTENSIONS):
+        # prepare relative path to the image for database
         filename = get_path(filename=secure_filename(photo.filename),
                             folder=app.config['UPLOAD_FOLDER'])
 
+        # prepare absolute path to the image for saving
         abs_path = '%s%s' % (BASE_DIR, filename)
+
+        # save image
         photo.save(abs_path)
+
+        # update user data
         user = update_user_photo(filename, g.user.id)
-        g.user = user
+
         return jsonify(user.serialize), 200
     else:
         return jsonify({'error', "Can't update user photo"}), 200
@@ -341,6 +394,14 @@ def edit_photo(uid):
 @app.route('/item/add/images/<int:uid>/<int:item_id>', methods=['POST'])
 @auth.login_required
 def add_item_images(uid, item_id):
+    """
+    Save item's images
+
+    :param uid:
+    :param item_id:
+    :return string: JSON
+    """
+
     images = list()
 
     # validate numbers
@@ -353,7 +414,7 @@ def add_item_images(uid, item_id):
     # get user data
     user_profile = get_user_by_id(uid)
 
-    # check user is owner account
+    # check the user is the owner of the account
     if user_profile.id != g.user.id:
         return jsonify({'error': 'permission denied'}), 403
 
@@ -375,7 +436,8 @@ def add_item_images(uid, item_id):
         abs_path = '%s%s' % (BASE_DIR, filename)
         image.save(abs_path)
         images.append(filename)
-    print images
+
+    # prepare response
     item_images = [item.serialize for item in add_images(images, item_id)]
     return jsonify(item_images), 200
 
@@ -384,6 +446,13 @@ def add_item_images(uid, item_id):
 @app.route('/profile/edit/<int:uid>', methods=['POST'])
 @auth.login_required
 def edit_profile(uid):
+    """
+    Edit user's data
+
+    :param uid:
+    :return string: JSON
+    """
+    # check the user is the owner
     user_profile = get_user_by_id(uid)
     if user_profile.id != g.user.id:
         return jsonify({'error': 'permission denied'}), 403
@@ -407,6 +476,12 @@ def edit_profile(uid):
 @app.route('/profile/delete/<int:uid>', methods=['POST'])
 @auth.login_required
 def delete_user(uid):
+    """
+    Remove user's profile
+
+    :param uid:
+    :return string: JSON
+    """
     user_profile = get_user_by_id(uid)
     if user_profile.id != g.user.id:
         return jsonify({'error': 'permission denied'}), 403
@@ -419,6 +494,12 @@ def delete_user(uid):
 @app.route('/create/item', methods=['POST'])
 @auth.login_required
 def new_item():
+    """
+    Create a new item
+
+    :return string: JSON
+    """
+
     # Get and clean data
     title = clean(request.json.get('title'))
     model = clean(request.json.get('model'))
@@ -434,6 +515,8 @@ def new_item():
         return jsonify({'error': 'too short model, minimum 2 characters'}), 206
     if len(description) < 5:
         return jsonify({'error': 'too short description, min 5 symbols'}), 206
+
+    # convert data to integer
     try:
         brand = int(brand)
     except TypeError:
@@ -443,8 +526,9 @@ def new_item():
     except TabError:
         return jsonify({'error': 'invalid price type'}), 206
 
+    # if brand les then 1 send error
     if brand < 1:
-        return jsonify({'error': 'category not found'}), 206
+        return jsonify({'error': 'brand not found'}), 206
 
     # Save data
     item = create_item(title, description, model, brand, author, price)
@@ -454,7 +538,14 @@ def new_item():
 @app.route('/update/item/<int:item_id>', methods=['POST'])
 @auth.login_required
 def edit_item(item_id):
-    print request.json
+    """
+    Edit item by id
+
+    :param item_id:
+    :return string: JSON
+    """
+
+    # get item data
     _item = dict()
     _item['title'] = clean(request.json.get('title'))
     _item['model'] = clean(request.json.get('model'))
@@ -463,6 +554,18 @@ def edit_item(item_id):
     _item['price'] = request.json.get('price')
     _item['author'] = int(g.user.id)
 
+    # get item
+    item = get_item_by_id(item_id) or None
+
+    # check item exist
+    if not item:
+        return jsonify({'error': 'This record don\'t exist'})
+
+    # check the user is the owner
+    if int(item.author) != _item['author']:
+        return jsonify(
+            {'error': 'You don\'t have permission to edit the record'})
+
     # Check data
     if len(_item['title']) < 5:
         return jsonify({'error': 'too short title, minimum 5 characters'}), 206
@@ -470,17 +573,45 @@ def edit_item(item_id):
         return jsonify({'error': 'too short model, minimum 2 characters'}), 206
     if len(_item['description']) < 5:
         return jsonify({'error': 'too short description, min 5 symbols'}), 206
+
+    # convert data to integer
     try:
-        _item['brand'] = int(_item['brand'])
+        _item['brand'] = int(_item['brand']['id'])
     except TypeError:
-        return jsonify({'error': 'invalid category type'}), 206
+        return jsonify({'error': 'invalid brand type'}), 206
     try:
         _item['price'] = int(_item['price'])
     except TabError:
         return jsonify({'error': 'invalid price type'}), 206
 
+    # update item and send response
     item = update_item(_item, item_id)
     return jsonify(item.serialize), 200
+
+
+@app.route('/delete/item/<int:item_id>')
+@auth.login_required
+def remove_item(item_id):
+    """
+    Remove item from data base
+
+    :param item_id:
+    :return string: JSON
+    """
+    item = get_item_by_id(item_id) or None
+
+    # check the item exist
+    if not item:
+        return jsonify({'error': 'This record don\'t exist'})
+
+    # check the user is the owner
+    if int(item.author) != int(g.user.id):
+        return jsonify(
+            {'error': 'You don\'t have permission to delete the record'})
+
+    # remove item and send response
+    delete_item(item_id)
+    return jsonify({'message': 'Record was deleted'})
 
 
 @app.route('/item/<int:item_id>')
@@ -489,6 +620,13 @@ def item_page(item_id):
     return jsonify(item.serialize), 200
 
 
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def default(path):
+    index = open(BASE_DIR + '/public/app/index.html', 'r').read()
+    return index
+
+
 if __name__ == '__main__':
     app.debug = True
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0')

@@ -34,6 +34,7 @@
       $routeProvider.when('/login', {templateUrl: '/view_users/login.html'});
       $routeProvider.when('/logout', {controller: 'LogoutController', template: ''});
       $routeProvider.when('/car/:item_id', {templateUrl: '/cat_view/item.html'});
+      $routeProvider.when('/brand/:brand_id', {templateUrl: '/cat_view/brand.html'});
       $routeProvider.when('/profile/edit/car/:item_id', {templateUrl: '/view_users/edit_item.html'});
       $routeProvider.when('/profile/:uid', {templateUrl: '/view_users/user-profile.html'});
       $routeProvider.when('/profile', {templateUrl: '/view_users/profile.html'});
@@ -101,7 +102,7 @@
       '<div ng-controller="MainController as main" class="row">\n' +
       '\t<div ng-repeat="item in main.items" class="col-sm-6 col-lg-4 mb-5">' +
       '\t\t<span class="tumbl-image" data-ng-click="main.showDescription()" ' +
-      '\t\t\t image-bg="{{item.images[0].url}}">' +
+      '       image-bg="{{item.images[0].url}}">' +
       '\t\t\t<div class="hide description">{{ item.description }}</div>' +
       '\t\t</span>' +
       '\t\t<div class="pt-2 text-center" id="title-link">' +
@@ -168,6 +169,19 @@
   app.controller('MainController', function ($resource, $window, User) {
     var $scope = this;
     $scope.items = $resource(uri('/')).query();
+    $scope.showDescription = function () {
+      $('.description').toggle();
+    };
+
+    $scope.sendEmail = function (email) {
+      $window.location.href = 'mailto:' + email;
+    };
+  });
+
+  // TODO: Brand controller
+  app.controller('BrandController', function ($resource, $routeParams, $window) {
+    var $scope = this;
+    $scope.items = $resource(uri('/category/' + $routeParams.brand_id)).query();
     $scope.showDescription = function () {
       $('.description').toggle();
     };
@@ -787,11 +801,12 @@
       $scope.error = "Error upload a photo";
     };
 
-
     $scope.editCar = function (car) {
       var match = false;
       for (var i = 0; i < $scope.brands.length; i++) {
-        if (Number($scope.brands[i].id) === Number(car.brand)) match = true;
+        if (Number($scope.brands[i].id) === Number(car.brand.id)) {
+          match = true;
+        }
       }
 
       if (match) {
@@ -806,12 +821,10 @@
           $scope.error = 'Model has to be more when 2 characters';
         }
         if (!$scope.error) {
-          car.brand = Number(car.brand);
           authPOST.query(uri('/update/item/' + car.id), car, user.get('token'), function (res) {
             if (res.status === 200) {
               $scope.error = false;
               console.info('res.data', res.data);
-              toggle();
 
             } else {
               if (res.data.error) {

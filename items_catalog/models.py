@@ -61,7 +61,7 @@ class User(Base):
         """
         return "%s %s" % (self.first_name, self.last_name)
 
-    def generate_auth_token(self, expiration=600):
+    def generate_auth_token(self, expiration=3600):
         """
         Generate authentication token
 
@@ -268,7 +268,7 @@ def get_user_by_id(uid):
 
 def update_user_photo(photo, uid):
     """
-    Update user photo
+    Update user photo and remove old file
 
     :param photo:
     :param uid:
@@ -284,12 +284,18 @@ def update_user_photo(photo, uid):
 
 def update_user(usr):
     """
-    Update user
+    Update user and return new data
 
     :param usr:
-    :return void:
+    :return object:
     """
-    session.query(User).filter_by(username=usr['username']).update(usr)
+    user = session.query(User).filter_by(username=usr['username']).first()
+    user.username = usr['username']
+    user.first_name = usr['first_name']
+    user.last_name = usr['last_name']
+    user.email = usr['email']
+    session.commit()
+    return user
 
 
 def remove_user(uid):
@@ -409,7 +415,7 @@ def get_items_by_category(category_id, limit, offset=None):
     :return object:
     """
     return session.query(Catalog).filter_by(
-        category_id=category_id).offset(offset).limit(limit)
+        category=category_id).offset(offset).limit(limit)
 
 
 def get_item_by_id(item_id):
@@ -430,8 +436,15 @@ def update_item(item, item_id):
     :param item_id:
     :return void:
     """
-    return session.query(Catalog).filter_by(
-        id=item_id).first().update(item)
+    current_item = session.query(Catalog).filter_by(id=item_id).first()
+    current_item.title = item['title']
+    current_item.model = item['model']
+    current_item.description = item['description']
+    current_item.category = item['brand']
+    current_item.author = item['author']
+    current_item.price = item['price']
+    session.commit()
+    return current_item
 
 
 def delete_item(item_id):
@@ -441,17 +454,30 @@ def delete_item(item_id):
     :param item_id:
     :return void:
     """
-    user = session.query(Catalog).filter_by(id=item_id).first()
-    session.delete(user)
+    item = session.query(Catalog).filter_by(id=item_id).first()
+    session.delete(item)
     session.commit()
 
 
 def add_images(images, item_id):
+    """
+    Add the images data into database for item
+
+    :param images: list
+    :param item_id: integer
+    :return object:
+    """
     objects = list()
+
+    # prepare saving data
     for image in images:
         objects.append(Image(product=item_id, url=image))
+
+    # saving objects
     session.bulk_save_objects(objects)
     session.commit()
+
+    # return list of images
     return session.query(Image).filter_by(product=item_id).all()
 
 

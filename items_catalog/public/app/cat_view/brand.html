@@ -1,0 +1,14 @@
+<div class="row" ng-controller="BrandController as BrandController">
+  <div ng-repeat="item in BrandController.items" class="col-sm-6 col-lg-4">
+    <span class="tumbl-image" data-ng-click="BrandController.showDescription()"
+          image-bg="{{item.images[0].url}}">
+        <div class="hide description">{{ item.description }}</div>
+    </span>
+    <div class="pt-2 text-center">{{ item.title }}</div>
+    <div class="pt-2">
+      <span data-ng-click="BrandController.sendEmail(item.author.email)" class="mail-to">
+        <i class="fa fa-envelope-o" aria-hidden="true"></i></span>
+      <span>{{ item.author.first_name }} {{ item.author.last_name }}</span>
+    </div>
+  </div>
+</div>

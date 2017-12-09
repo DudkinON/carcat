@@ -32,6 +32,10 @@ footer {
     background-color: #424242!important;
 }
 
+input[type="text"]:focus {
+    outline: none;
+}
+
 [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
     display: none !important;
 }
@@ -76,6 +80,20 @@ footer {
     display: block;
     background-position: 50% 50% !important;
     background-size: cover !important;
+}
+
+.empty-input {
+    border: 1px solid white;
+    width: 49.7%;
+    margin-bottom: 20px;
+}
+
+.red-link {
+    color: red;
+}
+
+.red-link:hover {
+    color: #a60000;
 }
 
 .mail-to {

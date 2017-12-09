@@ -1,0 +1,48 @@
+<div class="row" ng-controller="ProfileEditController as ProfileEditController">
+  <div class="col-sm-6 col-lg-3">
+    <div class="user-image-container" ng-hide="ProfileEditController.addedPhoto">
+      <img src="{{user.get('picture')}}" ng-show="!item._file"
+           alt="{{user.get('full_name')}}" class="rounded-circle user-image">
+      <input type="file" class="upload-img" nv-file-select=""
+             data-uploader="ProfileEditController.uploader">
+    </div>
+    <div ng-show="ProfileEditController.addedPhoto"
+         ng-repeat="item in ProfileEditController.uploader.queue">
+      <div ng-thumb="{ file: item._file, width: 130, height: 130 }"></div>
+    </div>
+    <div class="profile-name">
+      <div class="h5 w-100 mt-3">
+        <span>{{ProfileEditController.user.first_name}} </span>
+        <span>{{ProfileEditController.user.last_name}}</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-9">
+    <h4 class="card-title">
+      <span class="float-right">
+        <a href="/profile/delete/{{ProfileEditController.user.uid}}" class="red-link">
+          <i class="fa fa-trash" aria-hidden="true"></i>
+        </a>
+      </span>
+      <span>Profile</span>
+    </h4>
+    <div class="alert alert-danger" role="alert"
+         ng-show="ProfileEditController.error">{{ProfileEditController.error}}
+    </div>
+    <div class="user-data-container">
+      <input type="text" class="empty-input" placeholder="first name"
+             ng-model="ProfileEditController.user.first_name">
+      <input type="text" class="empty-input" placeholder="last name"
+             ng-model="ProfileEditController.user.last_name">
+      <input type="email" class="empty-input" placeholder="email"
+             ng-model="ProfileEditController.user.email">
+      <input type="text" class="empty-input" placeholder="username"
+             ng-model="ProfileEditController.user.username">
+    </div>
+    <div class="text-center pt-4">
+      <button class="mdl-button mdl-js-button mdl-js-ripple-effect" type="button"
+              data-ng-click="ProfileEditController.saveUser(ProfileEditController.user)"
+      >save</button>
+    </div>
+  </div>
+</div>

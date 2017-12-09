@@ -267,6 +267,7 @@ def get_auth_token():
     return jsonify({'token': token.decode('ascii'),
                     'uid': g.user.id,
                     'picture': g.user.picture,
+                    'username': g.user.username,
                     'first_name': g.user.first_name,
                     'last_name': g.user.last_name,
                     'status': g.user.status,

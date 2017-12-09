@@ -1,6 +1,6 @@
 (function () {
   // define url api
-  var HOST = 'http://carcat.tk/api';
+  var HOST = '/api';
 
   // Url constructor
   var uri = function (url) {
@@ -35,6 +35,7 @@
       $routeProvider.when('/logout', {controller: 'LogoutController', template: ''});
       $routeProvider.when('/car/:item_id', {templateUrl: '/cat_view/item.html'});
       $routeProvider.when('/brand/:brand_id', {templateUrl: '/cat_view/brand.html'});
+      $routeProvider.when('/profile/edit/user', {templateUrl: '/view_users/edit_profile.html'});
       $routeProvider.when('/profile/edit/car/:item_id', {templateUrl: '/view_users/edit_item.html'});
       $routeProvider.when('/profile/:uid', {templateUrl: '/view_users/user-profile.html'});
       $routeProvider.when('/profile', {templateUrl: '/view_users/profile.html'});
@@ -213,6 +214,7 @@
     };
 
   });
+
   // TODO: Login controller
   app.controller('LoginController', function ($resource, $scope, $location, $http, auth, Flash, $base64, User) {
 
@@ -385,6 +387,9 @@
             user.put("picture", res.data.picture);
             user.put("token", res.data.token);
             user.put("status", res.data.status);
+            user.put("first_name", res.data.first_name);
+            user.put("last_name", res.data.last_name);
+            user.put("username", res.data.username);
             user.put("uid", res.data.uid);
             user.put("full_name", res.data.full_name);
             resetData();
@@ -700,6 +705,80 @@
 
       console.info('car', car);
     }
+  });
+
+  // TODO: Profile controller
+  app.controller('ProfileEditController', function ($base64, $location, FileUploader, auth, authPOST, User) {
+    var $scope = this;
+
+    var $rootScope = angular.element(document.querySelector('[ng-app="app"]')).scope();
+
+    // Check user is logged in
+    if (User.info().size < 1) {
+      $location.url('/');
+    }
+
+    // Define scope
+    $scope.error = false;
+    $scope.admin = false;
+    $scope.category = false;
+    $scope.brands = $rootScope.menu;
+    $scope.car = {};
+    $scope.addedPhoto = false;
+    $scope.user = {};
+    $scope.user.uid = User.get('uid');
+    $scope.user.first_name = User.get('first_name');
+    $scope.user.last_name = User.get('last_name');
+    $scope.user.full_name = $scope.user.first_name + ' ' + $scope.user.last_name;
+    $scope.user.email = User.get('email');
+    $scope.user.status = User.get('status');
+    $scope.user.username = User.get('username');
+
+
+    // Define admin status
+    if (User.get("status") === "admin") $scope.admin = true;
+
+    var credentials = $base64.encode(User.get("token") + ':');
+    var uploader = $scope.uploader = new FileUploader({
+      method: 'POST',
+      url: uri('/profile/edit/photo/' + User.get("uid")),
+      headers: {'Authorization': 'Basic ' + credentials},
+      autoUpload: true
+    });
+
+    // filters
+    uploader.filters.push({
+      name: 'imageFilter',
+      fn: function (item /*{File|FileLikeObject}*/, options) {
+        var type = '|' + item.type.slice(item.type.lastIndexOf('/') + 1) + '|';
+        return '|jpg|png|jpeg|bmp|gif|'.indexOf(type) !== -1;
+      }
+    });
+
+    uploader.onWhenAddingFileFailed = function (item /*{File|FileLikeObject}*/, filter, options) {
+      $scope.addedPhoto = false;
+      $scope.error = "Error file format";
+    };
+    uploader.onAfterAddingFile = function (fileItem) {
+      $scope.addedPhoto = true;
+    };
+    uploader.onSuccessItem = function (fileItem, response, status, headers) {
+      if (response.error) {
+        $scope.error = response.error;
+      } else {
+        User.put("picture", response.picture);
+        $scope.addedPhoto = false;
+      }
+    };
+    uploader.onErrorItem = function (fileItem, response, status, headers) {
+      $scope.error = "Error upload a photo";
+    };
+
+
+    $scope.saveUser = function (user) {
+
+    };
+
   });
 
   // TODO: Item edit controller

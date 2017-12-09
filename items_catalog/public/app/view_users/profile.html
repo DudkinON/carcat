@@ -1,85 +1,106 @@
 <div class="row" ng-controller="ProfileController as ProfileController">
-    <div class="col-sm-6 col-lg-3">
-        <div class="user-image-container" ng-hide="ProfileController.addedPhoto">
-            <img src="{{user.get('picture')}}" ng-show="!item._file"
-                 alt="{{user.get('full_name')}}" class="rounded-circle user-image">
-            <input type="file" class="upload-img" nv-file-select=""
-                   data-uploader="ProfileController.uploader">
-        </div>
-        <div ng-show="ProfileController.addedPhoto"
-             ng-repeat="item in ProfileController.uploader.queue">
-            <div ng-thumb="{ file: item._file, width: 130, height: 130 }"></div>
-        </div>
-
-        <div class="h5 w-100 mt-3">{{user.get('full_name')}}</div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="user-image-container" ng-hide="ProfileController.addedPhoto">
+      <img src="{{user.get('picture')}}" ng-show="!item._file"
+           alt="{{user.get('full_name')}}" class="rounded-circle user-image">
+      <input type="file" class="upload-img" nv-file-select=""
+             data-uploader="ProfileController.uploader">
     </div>
-    <div class="col-sm-6 col-lg-9">
-        <h4 class="card-title">Profile</h4>
-        <div class="alert alert-danger" role="alert"
-             ng-show="ProfileController.error">{{ProfileController.error}}</div>
-        <div class="my-items">
-            <h4 class="h5">My cars</h4>
-            <div class="h6" ng-repeat="item in myCars">
-                <span class="float-right">
-                    <a href="/profile/edit/car/{{item.id}}">
-                        <i class="fa fa-cogs" aria-hidden="true"></i>
-                    </a>
-                </span>
-                <span><a href="/profile/edit/car/{{item.id}}">{{item.title}}</a></span>
-            </div>
+    <div ng-show="ProfileController.addedPhoto"
+         ng-repeat="item in ProfileController.uploader.queue">
+      <div ng-thumb="{ file: item._file, width: 130, height: 130 }"></div>
+    </div>
+    <div class="profile-name">
+      <span class="float-right">
+        <a href="/profile/edit/user">
+          <i class="fa fa-cog" aria-hidden="true"></i>
+        </a>
+      </span>
+      <div class="h5 w-100 mt-3">{{user.get('full_name')}}</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-9">
+    <h4 class="card-title">Profile</h4>
+    <div class="alert alert-danger" role="alert"
+         ng-show="ProfileController.error">{{ProfileController.error}}
+    </div>
+    <div class="my-items">
+      <h4 class="h4 mb-3">My cars</h4>
+      <div class="h6 mb-2" ng-repeat="item in myCars">
+        <div class="float-right">
+          <span class="mr-2">
+            <a href="/profile/edit/car/{{item.id}}">
+              <i class="fa fa-cogs" aria-hidden="true"></i>
+            </a>
+          </span>
+          <span>
+            <a href="/delete/item/{{item.id}}" class="red-link">
+              <i class="fa fa-trash" aria-hidden="true"></i>
+            </a>
+          </span>
         </div>
+        <span><a href="/profile/edit/car/{{item.id}}">{{item.title}}</a></span>
+      </div>
+    </div>
 
-        <!-- TODO: Add category -->
-        <div class="add-cat" ng-show="ProfileController.admin">
-            <div data-id="category" data-type="text" data-labeltext="add category"
-                 data-errortext="write category" data-model="category"
-                 class="d-inline" field></div>
-            <div class="d-inline">
-                <button type="button" class="mdl-button mdl-js-button mdl-js-ripple-effect"
-                    data-ng-click="ProfileController.addCategory()">add</button>
-            </div>
+    <!-- TODO: Add category -->
+    <div class="add-cat" ng-show="ProfileController.admin">
+      <div data-id="category" data-type="text" data-labeltext="add category"
+           data-errortext="write category" data-model="category"
+           class="d-inline" field></div>
+      <div class="d-inline">
+        <button type="button"
+                class="mdl-button mdl-js-button mdl-js-ripple-effect"
+                data-ng-click="ProfileController.addCategory()">add
+        </button>
+      </div>
+    </div>
+
+    <!-- TODO: Add new car in catalog -->
+    <div class="add-car">
+      <form id="add-car">
+        <div class="form-group">
+          <select class="form-control" id="brand"
+                  ng-model="ProfileController.car.brand">
+            <option value="" disabled selected>brand</option>
+            <option value="{{brand.id}}"
+                    ng-repeat="brand in ProfileController.brands"
+            >{{brand.name}}
+            </option>
+          </select>
         </div>
-        
-        <!-- TODO: Add new car in catalog -->
-        <div class="add-car">
-            <form id="add-car">
-                <div class="form-group">
-                    <select class="form-control" id="brand"
-                    ng-model="ProfileController.car.brand">
-                        <option value="" disabled selected>brand</option>
-                        <option value="{{brand.id}}"
-                                ng-repeat="brand in ProfileController.brands"
-                        >{{brand.name}}</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="title"
-                           placeholder="Enter title" autocomplete="off"
-                           ng-model="ProfileController.car.title">
-                </div>
-                <div class="form-group">
-                    <input type="text" class="form-control" id="model"
-                           placeholder="Enter model" autocomplete="off"
-                           ng-model="ProfileController.car.model">
-                </div>
-                <div class="form-group">
+        <div class="form-group">
+          <input type="text" class="form-control" id="title"
+                 placeholder="Enter title" autocomplete="off"
+                 ng-model="ProfileController.car.title">
+        </div>
+        <div class="form-group">
+          <input type="text" class="form-control" id="model"
+                 placeholder="Enter model" autocomplete="off"
+                 ng-model="ProfileController.car.model">
+        </div>
+        <div class="form-group">
                     <textarea class="form-control" id="description" rows="4"
-                    ng-model="ProfileController.car.description" autocomplete="off"
-                    placeholder="description"></textarea>
-                </div>
-                <div class="input-group">
-                    <span class="input-group-addon">$</span>
-                    <input type="number" class="form-control"
-                           aria-label="Amount (to the nearest dollar)"
-                           ng-model="ProfileController.car.price"
-                           autocomplete="off">
-                    <span class="input-group-addon">.00</span>
-                </div>
-                <div class="mb-5 pt-3">
-                    <button type="button" class="mdl-button mdl-js-button mdl-js-ripple-effect"
-                    data-ng-click="ProfileController.addCar(ProfileController.car)">add new car</button>
-                </div>
-            </form>
+                              ng-model="ProfileController.car.description"
+                              autocomplete="off"
+                              placeholder="description"></textarea>
         </div>
+        <div class="input-group">
+          <span class="input-group-addon">$</span>
+          <input type="number" class="form-control"
+                 aria-label="Amount (to the nearest dollar)"
+                 ng-model="ProfileController.car.price"
+                 autocomplete="off">
+          <span class="input-group-addon">.00</span>
+        </div>
+        <div class="mb-5 pt-3">
+          <button type="button"
+                  class="mdl-button mdl-js-button mdl-js-ripple-effect"
+                  data-ng-click="ProfileController.addCar(ProfileController.car)">
+            add new car
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>

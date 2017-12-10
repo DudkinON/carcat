@@ -41,16 +41,16 @@
   app.config(['$routeProvider', '$locationProvider', '$resourceProvider', 'FlashProvider',
     function ($routeProvider, $locationProvider, $resourceProvider, FlashProvider) {
       $locationProvider.html5Mode(true);
-      $routeProvider.when('/login', {templateUrl: '/view_users/login.html'});
+      $routeProvider.when('/login', {templateUrl: '/static/view_users/login.html'});
       $routeProvider.when('/logout', {controller: 'LogoutController', template: ''});
-      $routeProvider.when('/car/:item_id', {templateUrl: '/cat_view/item.html'});
-      $routeProvider.when('/brand/:brand_id', {templateUrl: '/cat_view/brand.html'});
-      $routeProvider.when('/profile/edit/user', {templateUrl: '/view_users/edit_profile.html'});
-      $routeProvider.when('/profile/edit/car/:item_id', {templateUrl: '/view_users/edit_item.html'});
-      $routeProvider.when('/profile/delete/car/:item_id', {templateUrl: '/view_users/delete_item.html'});
-      $routeProvider.when('/profile/:uid', {templateUrl: '/view_users/user-profile.html'});
-      $routeProvider.when('/profile', {templateUrl: '/view_users/profile.html'});
-      $routeProvider.when('/register', {templateUrl: '/view_users/register.html'});
+      $routeProvider.when('/car/:item_id', {templateUrl: '/static/cat_view/item.html'});
+      $routeProvider.when('/brand/:brand_id', {templateUrl: '/static/cat_view/brand.html'});
+      $routeProvider.when('/profile/edit/user', {templateUrl: '/static/view_users/edit_profile.html'});
+      $routeProvider.when('/profile/edit/car/:item_id', {templateUrl: '/static/view_users/edit_item.html'});
+      $routeProvider.when('/profile/delete/car/:item_id', {templateUrl: '/static/view_users/delete_item.html'});
+      $routeProvider.when('/profile/:uid', {templateUrl: '/static/view_users/user-profile.html'});
+      $routeProvider.when('/profile', {templateUrl: '/static/view_users/profile.html'});
+      $routeProvider.when('/register', {templateUrl: '/static/view_users/register.html'});
       $routeProvider.when('/', {templateUrl: 'main.html'});
       $routeProvider.otherwise({redirectTo: '/'});
       $resourceProvider.defaults.stripTrailingSlashes = false;

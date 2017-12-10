@@ -19,16 +19,21 @@
   <!-- Styles -->
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,300,700"
         rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="/components/css/normalize.css">
-  <link rel="stylesheet" href="/css/font-awesome.min.css">
-  <link rel="stylesheet" href="/css/bs.css">
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='components/css/normalize.css') }}">
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='css/bs.css') }}">
   <link rel="stylesheet"
         href="//fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet"
         href="//code.getmdl.io/1.3.0/material.indigo-pink.min.css">
-  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='css/app.css') }}">
   <!-- Material Design Lite -->
-  <script defer src="/js/material.min.js"></script>
+  <script defer
+          src="{{ url_for('static', filename='js/material.min.js') }}"></script>
   <base href="/">
 
 </head>
@@ -56,8 +61,8 @@
             </a>
             <div class="dropdown-menu"
                  aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="/brand/{{item.id}}"
-                 ng-repeat="item in menu">{{item.name}}</a>
+              <a class="dropdown-item" href="/brand/{{ item.id }}"
+                 ng-repeat="item in menu">{{ item.name }}</a>
             </div>
           </li>
         </ul>
@@ -107,23 +112,90 @@
 </section>
 
 <footer>
-  <div class="container" ng-include="'/footer.html'"></div>
+  <div class="container">
+    <div class="mdl-mega-footer">
+      <div class="mdl-mega-footer__middle-section">
+
+        <div class="mdl-mega-footer__drop-down-section">
+          <input class="mdl-mega-footer__heading-checkbox" type="checkbox"
+                 checked>
+          <h1 class="mdl-mega-footer__heading">Features</h1>
+          <ul class="mdl-mega-footer__link-list">
+            <li><a href="#">About</a></li>
+            <li><a href="#">Terms</a></li>
+            <li><a href="#">Partners</a></li>
+            <li><a href="#">Updates</a></li>
+          </ul>
+        </div>
+
+        <div class="mdl-mega-footer__drop-down-section">
+          <input class="mdl-mega-footer__heading-checkbox" type="checkbox"
+                 checked>
+          <h1 class="mdl-mega-footer__heading">Details</h1>
+          <ul class="mdl-mega-footer__link-list">
+            <li><a href="#">Specs</a></li>
+            <li><a href="#">Tools</a></li>
+            <li><a href="#">Resources</a></li>
+          </ul>
+        </div>
+
+        <div class="mdl-mega-footer__drop-down-section">
+          <input class="mdl-mega-footer__heading-checkbox" type="checkbox"
+                 checked>
+          <h1 class="mdl-mega-footer__heading">Technology</h1>
+          <ul class="mdl-mega-footer__link-list">
+            <li><a href="#">How it works</a></li>
+            <li><a href="#">Patterns</a></li>
+            <li><a href="#">Usage</a></li>
+            <li><a href="#">Products</a></li>
+            <li><a href="#">Contracts</a></li>
+          </ul>
+        </div>
+
+        <div class="mdl-mega-footer__drop-down-section">
+          <input class="mdl-mega-footer__heading-checkbox" type="checkbox"
+                 checked>
+          <h1 class="mdl-mega-footer__heading">FAQ</h1>
+          <ul class="mdl-mega-footer__link-list">
+            <li><a href="#">Questions</a></li>
+            <li><a href="#">Answers</a></li>
+            <li><a href="#">Contact us</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="mdl-mega-footer__bottom-section">
+        <div class="mdl-logo">Title</div>
+        <ul class="mdl-mega-footer__link-list">
+          <li><a href="#">Help</a></li>
+          <li><a href="#">Privacy & Terms</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </footer>
 
 <!-- AngularJS -->
-<script src="/components/angular.min.js"></script>
+<script
+    src="{{ url_for('static', filename='components/angular.min.js') }}"></script>
 <!-- AngularJS - Route -->
-<script src="/components/angular-route/angular-route.js"></script>
+<script
+    src="{{ url_for('static', filename='components/angular-route/angular-route.js') }}"></script>
 <!-- AngularJS - Resource -->
-<script src="components/angular-resource.min.js"></script>
+<script
+    src="{{ url_for('static', filename='components/angular-resource.min.js') }}"></script>
 <!-- AngularJS - Resource -->
-<script src="/components/angular-flash.min.js"></script>
+<script
+    src="{{ url_for('static', filename='components/angular-flash.min.js') }}"></script>
 <!-- AngularJS - Base64 -->
-<script src="/components/angular-base64/angular-base64.min..js"></script>
+<script
+    src="{{ url_for('static', filename='components/angular-base64/angular-base64.min.js') }}"></script>
 <!-- jQuery -->
-<script src="/js/jq.js"></script>
+<script src="{{ url_for('static', filename='js/jq.js') }}"></script>
 <!-- AngularJS upload files -->
-<script src="/js/angular-file-upload.min.js"></script>
+<script
+    src="{{ url_for('static', filename='js/angular-file-upload.min.js') }}"></script>
 <!-- PopperJS -->
 <script
     src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
@@ -135,7 +207,7 @@
     integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
     crossorigin="anonymous"></script>
 <!-- App -->
-<script src="/js/app.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
 
 </body>
 </html>

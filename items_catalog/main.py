@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from flask import Flask, jsonify, request, g
+from flask import Flask, jsonify, request, g, render_template
 from models import create_user, get_user_by_username, create_category
 from models import create_item, User, get_items_by_category, update_user_photo
 from models import get_categories, get_items, get_user_by_email, check_category
@@ -642,8 +642,8 @@ def item_page(item_id):
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def default(path):
-    index = open(BASE_DIR + '/public/app/index.html', 'r').read()
-    return index
+    item = {'id': '', 'name': ''}
+    return render_template('default.html', item=item)
 
 
 if __name__ == '__main__':

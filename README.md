@@ -39,7 +39,7 @@ Demo you can see it here: [www.carcat.tk](http://www.carcat.tk)
 ## Used:
 
 * [Python 2.7.14](https://www.python.org/downloads/release/python-2714/)
-* Python modules in [requirements.txt](requirements.txt)
+* Python modules in [requirements.txt](items_catalog/requirements.txt)
 * [AngularJS 1.6.6](https://angularjs.org/)
 
 ## License

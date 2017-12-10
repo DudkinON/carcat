@@ -183,7 +183,7 @@ def login(provider):
 
 
 # TODO: All items
-@app.route('/')
+@app.route('/api/')
 def all_items():
     """
     Return 9 last added items
@@ -196,7 +196,7 @@ def all_items():
 
 
 # TODO: Get categories
-@app.route('/categories')
+@app.route('/api/categories')
 def categories():
     """
     Return list of categories
@@ -208,7 +208,7 @@ def categories():
 
 
 # TODO: Get items by category
-@app.route('/category/<int:category_id>')
+@app.route('/api/category/<int:category_id>')
 def category(category_id):
     """
     Return items by category id
@@ -221,7 +221,7 @@ def category(category_id):
 
 
 # TODO: Add new category
-@app.route('/category/new', methods=['POST'])
+@app.route('/api/category/new', methods=['POST'])
 @auth.login_required
 def add_category():
     """
@@ -247,7 +247,7 @@ def add_category():
 
 
 # TODO: Get auth token
-@app.route('/token')
+@app.route('/api/token')
 @auth.login_required
 def get_auth_token():
     """
@@ -268,7 +268,7 @@ def get_auth_token():
 
 
 # TODO: Create a new user
-@app.route('/users/create', methods=['POST'])
+@app.route('/api/users/create', methods=['POST'])
 def new_user():
     """
     Create a new user
@@ -315,7 +315,7 @@ def new_user():
 
 
 # TODO: Get a profile info by uid
-@app.route('/profile/<int:uid>')
+@app.route('/api/profile/<int:uid>')
 def profile(uid):
     """
     Return serializable users data
@@ -327,7 +327,7 @@ def profile(uid):
     return jsonify(user.serialize)
 
 
-@app.route('/profile/items')
+@app.route('/api/profile/items')
 @auth.login_required
 def get_user_items():
     """
@@ -340,7 +340,7 @@ def get_user_items():
 
 
 # TODO: Edit user photo
-@app.route('/profile/edit/photo/<int:uid>', methods=['POST'])
+@app.route('/api/profile/edit/photo/<int:uid>', methods=['POST'])
 @auth.login_required
 def edit_photo(uid):
     """
@@ -384,7 +384,7 @@ def edit_photo(uid):
 
 
 # TODO: Add items photos
-@app.route('/item/add/images/<int:uid>/<int:item_id>', methods=['POST'])
+@app.route('/api/item/add/images/<int:uid>/<int:item_id>', methods=['POST'])
 @auth.login_required
 def add_item_images(uid, item_id):
     """
@@ -434,7 +434,7 @@ def add_item_images(uid, item_id):
 
 
 # TODO: Edit user data
-@app.route('/profile/edit/<int:uid>', methods=['POST'])
+@app.route('/api/profile/edit/<int:uid>', methods=['POST'])
 @auth.login_required
 def edit_profile(uid):
     """
@@ -477,7 +477,7 @@ def edit_profile(uid):
 
 
 # TODO: Delete an user
-@app.route('/profile/delete/<int:uid>', methods=['POST'])
+@app.route('/api/profile/delete/<int:uid>', methods=['POST'])
 @auth.login_required
 def delete_user(uid):
     """
@@ -495,7 +495,7 @@ def delete_user(uid):
 
 
 # TODO: Create a new item
-@app.route('/create/item', methods=['POST'])
+@app.route('/api/create/item', methods=['POST'])
 @auth.login_required
 def new_item():
     """
@@ -539,7 +539,7 @@ def new_item():
     return jsonify(item.serialize), 200
 
 
-@app.route('/update/item/<int:item_id>', methods=['POST'])
+@app.route('/api/update/item/<int:item_id>', methods=['POST'])
 @auth.login_required
 def edit_item(item_id):
     """
@@ -593,7 +593,7 @@ def edit_item(item_id):
     return jsonify(item.serialize), 200
 
 
-@app.route('/delete/item/<int:item_id>', methods=['POST'])
+@app.route('/api/delete/item/<int:item_id>', methods=['POST'])
 @auth.login_required
 def remove_item(item_id):
     """
@@ -628,7 +628,7 @@ def remove_item(item_id):
     return jsonify({'message': 'Record was deleted'})
 
 
-@app.route('/item/<int:item_id>')
+@app.route('/api/item/<int:item_id>')
 def item_page(item_id):
     """
     Return item

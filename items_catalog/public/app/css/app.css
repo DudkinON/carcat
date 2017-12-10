@@ -88,6 +88,11 @@ input[type="text"]:focus {
     margin-bottom: 20px;
 }
 
+.img-preview {
+    width: 200px;
+    max-height: 200px;
+}
+
 .red-link {
     color: red;
 }

@@ -27,6 +27,16 @@
     return re.test(email);
   };
 
+  function updateCars(auth, token) {
+    /**
+     * Update user cars
+     */
+    var $rootScope = angular.element(document.querySelector('[ng-app="app"]')).scope();
+      auth.query(uri('/profile/items'), token, function (res) {
+        $rootScope.myCars = res.data
+      });
+    }
+
   // define app config
   app.config(['$routeProvider', '$locationProvider', '$resourceProvider', 'FlashProvider',
     function ($routeProvider, $locationProvider, $resourceProvider, FlashProvider) {
@@ -37,6 +47,7 @@
       $routeProvider.when('/brand/:brand_id', {templateUrl: '/cat_view/brand.html'});
       $routeProvider.when('/profile/edit/user', {templateUrl: '/view_users/edit_profile.html'});
       $routeProvider.when('/profile/edit/car/:item_id', {templateUrl: '/view_users/edit_item.html'});
+      $routeProvider.when('/profile/delete/car/:item_id', {templateUrl: '/view_users/delete_item.html'});
       $routeProvider.when('/profile/:uid', {templateUrl: '/view_users/user-profile.html'});
       $routeProvider.when('/profile', {templateUrl: '/view_users/profile.html'});
       $routeProvider.when('/register', {templateUrl: '/view_users/register.html'});
@@ -301,11 +312,7 @@
               user.put("full_name", result.data.full_name);
 
               toggle();
-              $scope.alert('Success login as ' + result.data.full_name, 'success');
               $location.url('/profile');
-              var loginBox = $('#login-box');
-              loginBox.html('<a href="/profile" class="mdl-button mdl-js-button">go to profile?</a>');
-
             }, function (error) {
               console.log(error);
             });
@@ -591,13 +598,7 @@
       $('#add-item-images').toggle();
     };
 
-    function updateMyCars() {
-      auth.query(uri('/profile/items'), user.get("token"), function (res) {
-        $rootScope.myCars = res.data
-      });
-    }
-
-    if ($rootScope.myCars === undefined) updateMyCars();
+    if ($rootScope.myCars === undefined) updateCars(auth, User.get("token"));
 
     // Define admin status
     if (user.get("status") === "admin") $scope.admin = true;
@@ -685,7 +686,7 @@
             if (res.status === 200) {
               $scope.error = false;
               console.info('res.data', res);
-              updateMyCars();
+              updateCars(auth, User.get("token"));
               $location.url('/profile/edit/car/' + res.data.id)
 
             } else {
@@ -707,7 +708,7 @@
     }
   });
 
-  // TODO: Profile controller
+  // TODO: Profile edit controller
   app.controller('ProfileEditController', function ($base64, $location, FileUploader, auth, authPOST, User) {
     var $scope = this;
 
@@ -720,6 +721,7 @@
 
     // Define scope
     $scope.error = false;
+    $scope.message = false;
     $scope.admin = false;
     $scope.category = false;
     $scope.brands = $rootScope.menu;
@@ -774,9 +776,25 @@
       $scope.error = "Error upload a photo";
     };
 
+    function checkUser(user) {
+      if (user.first_name.length < 2) $scope.error = "too short first name min 2 characters";
+      if (user.last_name.length < 2) $scope.error = "too short last name min 2 characters";
+      if (user.username.length < 5) $scope.error = "too short username name min 5 characters";
+      if (user.email.length < 7) $scope.error = "too short email min 7 characters";
+      if (user.email.length > 40) $scope.error = "too large email max 40 characters";
+      if (!isEmail(user.email)) $scope.error = "invalid email";
+    }
 
     $scope.saveUser = function (user) {
-
+      $scope.error = false;
+      $scope.message = false;
+      checkUser(user);
+      if (!$scope.error) {
+        authPOST.query(uri('/profile/edit/' + user.uid), user, User.get("token"), function (res) {
+          if (res.data.message !== undefined) $scope.message = res.data.message;
+          if (res.data.error !== undefined) $scope.error = res.data.error;
+        });
+      }
     };
 
   });
@@ -817,7 +835,7 @@
     $scope.car_id = $routeParams.item_id;
     $scope.car = getCar($scope.car_id);
     $scope.addedPhoto = false;
-    if (!$scope.car.images.length) $scope.currentImg = {};
+    if ($scope.car.images !== undefined && !$scope.car.images.length) $scope.currentImg = {};
     else $scope.currentImg = $scope.car.images[0];
 
 
@@ -922,6 +940,44 @@
 
       console.info('car', car);
     }
+  });
+
+  // TODO: Delete Item controller
+  app.controller('DeleteItemController', function ($base64, $location, $routeParams, authPOST, auth, User) {
+    var $scope = this;
+    var $rootScope = angular.element(document.querySelector('[ng-app="app"]')).scope();
+
+    function getCar(carId) {
+      for (var i = 0; i < $rootScope.myCars.length; i++) {
+        if ($rootScope.myCars[i].id === Number(carId)) {
+          return $rootScope.myCars[i];
+        }
+      }
+    }
+
+
+    $scope.error = false;
+    $scope.car_id = $routeParams.item_id;
+    $scope.car = getCar($scope.car_id);
+
+    $scope.deleteCar = function () {
+      $scope.error = false;
+      var car_id = {'item_id': $scope.car_id};
+      authPOST.query(
+        uri('/delete/item/' + $scope.car_id),
+        car_id,
+        User.get('token'),
+        function (res) {
+        console.log(res);
+        if (res.data.error !== undefined) $scope.error = res.data.error;
+        else if (res.data.message !== undefined) {
+          updateCars(auth, User.get("token"));
+          $location.url('/profile');
+        } else {
+          $scope.error = "Server is not available, check you internet connection";
+        }
+      });
+    };
   });
 
   // TODO: Get user profile controller

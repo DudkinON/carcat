@@ -7,7 +7,8 @@ from models import create_item, User, get_items_by_category, update_user_photo
 from models import get_categories, get_items, get_user_by_email, check_category
 from models import user_exist, update_user, remove_user, get_user_by_id
 from models import add_images, get_items_by_user, update_item, get_item_by_id
-from models import delete_item
+from models import delete_item, email_exist, get_images_by_item_id
+from models import remove_images_by_item_id
 from data_control import email_is_valid, get_unique_str, get_path, allowed_file
 from settings import *
 from flask_httpauth import HTTPBasicAuth
@@ -92,7 +93,6 @@ def login(provider):
         answer = r_get(userinfo_url, params=params)
 
         data = answer.json()
-        print data
 
         # see if user exists, if it doesn't make a new one
         user = get_user_by_email(email=data['email'])
@@ -132,14 +132,6 @@ def login(provider):
 
         # Use token to get user info from API
 
-        '''
-            Due to the formatting for the result from the server token exchange
-            we have to split the token first on commas and select the first 
-            index which gives us the key : value for the server access token 
-            then we split it on colons to pull out the actual token value
-            and replace the remaining quotes with nothing so that it can be 
-            used directly in the graph api calls
-        '''
         token = result.split(',')[0].split(':')[1].replace('"', '')
         url = fb_data['user_info_url'] % token
 
@@ -421,8 +413,6 @@ def add_item_images(uid, item_id):
 
     # get list of images
     upload_images = request.files.getlist('file')
-    print request.files
-    print upload_images
 
     # validate images
     if upload_images is []:
@@ -453,19 +443,32 @@ def edit_profile(uid):
     :param uid:
     :return string: JSON
     """
-    # check the user is the owner
+    # check if the user is the owner
     user_profile = get_user_by_id(uid)
     if user_profile.id != g.user.id:
         return jsonify({'error': 'permission denied'}), 403
 
     # define user object
     user = {
+        'uid': uid,
         'username': clean(request.json.get('username')),
-        'password': clean(request.json.get('password')),
         'first_name': clean(request.json.get('first_name')),
         'last_name': clean(request.json.get('last_name')),
         'email': clean(request.json.get('email')),
     }
+
+    # validate data
+    if not user['username']:
+        return jsonify({'error': 'username can\'t be empty'})
+    if not user['first_name']:
+        return jsonify({'error': 'first name can\'t be empty'})
+    if not user['last_name']:
+        return jsonify({'error': 'last name can\'t be empty'})
+    if not user['email']:
+        return jsonify({'error': 'email can\'t be empty'})
+
+    if user_profile.email != user['email'] and email_exist(user['email']):
+        return jsonify({'error': 'email already registered'})
 
     # update user
     update_user(user)
@@ -590,7 +593,7 @@ def edit_item(item_id):
     return jsonify(item.serialize), 200
 
 
-@app.route('/delete/item/<int:item_id>')
+@app.route('/delete/item/<int:item_id>', methods=['POST'])
 @auth.login_required
 def remove_item(item_id):
     """
@@ -608,15 +611,30 @@ def remove_item(item_id):
     # check the user is the owner
     if int(item.author) != int(g.user.id):
         return jsonify(
-            {'error': 'You don\'t have permission to delete the record'})
+            {'error': 'You don\'t have permission to delete this record'})
 
-    # remove item and send response
+    images = get_images_by_item_id(item_id)
+
+    # remove images files
+    for image in images:
+        path = ''.join([BASE_DIR, image.url])
+
+        if os.path.isfile(path):
+            os.unlink(path)
+
+    # remove item and images from database
     delete_item(item_id)
+    remove_images_by_item_id(item_id)
     return jsonify({'message': 'Record was deleted'})
 
 
 @app.route('/item/<int:item_id>')
 def item_page(item_id):
+    """
+    Return item
+    :param item_id:
+    :return string: JSON
+    """
     item = get_item_by_id(item_id)
     return jsonify(item.serialize), 200
 

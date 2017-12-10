@@ -34,7 +34,7 @@
             </a>
           </span>
           <span>
-            <a href="/delete/item/{{item.id}}" class="red-link">
+            <a href="/profile/delete/car/{{item.id}}" class="red-link">
               <i class="fa fa-trash" aria-hidden="true"></i>
             </a>
           </span>
@@ -43,22 +43,10 @@
       </div>
     </div>
 
-    <!-- TODO: Add category -->
-    <div class="add-cat" ng-show="ProfileController.admin">
-      <div data-id="category" data-type="text" data-labeltext="add category"
-           data-errortext="write category" data-model="category"
-           class="d-inline" field></div>
-      <div class="d-inline">
-        <button type="button"
-                class="mdl-button mdl-js-button mdl-js-ripple-effect"
-                data-ng-click="ProfileController.addCategory()">add
-        </button>
-      </div>
-    </div>
-
     <!-- TODO: Add new car in catalog -->
-    <div class="add-car">
-      <form id="add-car">
+    <div class="add-car mt-5 mb-4">
+      <h4 class="h4 mb-3">Add a new car</h4>
+      <form id="add-car" class="pt-3">
         <div class="form-group">
           <select class="form-control" id="brand"
                   ng-model="ProfileController.car.brand">
@@ -101,6 +89,19 @@
           </button>
         </div>
       </form>
+    </div>
+
+    <!-- TODO: Add category -->
+    <div class="add-cat" ng-show="ProfileController.admin">
+      <div data-id="category" data-type="text" data-labeltext="add category"
+           data-errortext="write category" data-model="category"
+           class="d-inline" field></div>
+      <div class="d-inline">
+        <button type="button"
+                class="mdl-button mdl-js-button mdl-js-ripple-effect"
+                data-ng-click="ProfileController.addCategory()">add
+        </button>
+      </div>
     </div>
   </div>
 </div>

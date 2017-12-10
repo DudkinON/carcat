@@ -55,7 +55,7 @@ class User(Base):
     @property
     def get_full_name(self):
         """
-        Return ful name (first and last name)
+        Return full name (first and last name)
 
         :return string:
         """
@@ -215,6 +215,16 @@ def user_exist(username):
     return session.query(User).filter_by(username=username).first() is not None
 
 
+def email_exist(email):
+    """
+    Check user exist
+
+    :param email:
+    :return bool:
+    """
+    return session.query(User).filter_by(email=email).first() is not None
+
+
 def get_user_by_email(email):
     """
     Return user by email or None
@@ -289,7 +299,7 @@ def update_user(usr):
     :param usr:
     :return object:
     """
-    user = session.query(User).filter_by(username=usr['username']).first()
+    user = session.query(User).filter_by(id=usr['uid']).first()
     user.username = usr['username']
     user.first_name = usr['first_name']
     user.last_name = usr['last_name']
@@ -479,6 +489,27 @@ def add_images(images, item_id):
 
     # return list of images
     return session.query(Image).filter_by(product=item_id).all()
+
+
+def get_images_by_item_id(item_id):
+    """
+    return list of images by item id
+
+    :param item_id:
+    :return object:
+    """
+    return session.query(Image).filter_by(product=item_id).all() or []
+
+
+def remove_images_by_item_id(item_id):
+    """
+    Remove images
+
+    :param item_id:
+    :return:
+    """
+    session.query(Image).filter_by(product=item_id).delete()
+    session.commit()
 
 
 Base.metadata.create_all(engine)

@@ -246,6 +246,33 @@ def add_category():
     return jsonify(cats), 200
 
 
+# TODO: Add new category
+@app.route('/category/edit/<int:cat_id>', methods=['POST'])
+@auth.login_required
+def edit_category(cat_id):
+
+    # check user status
+    if g.user.status != 'admin':
+        return jsonify({'error': "You do not have permission to do that"}), 200
+
+    # check if category exist
+    if not get_category_by_id(cat_id):
+        return jsonify({'error', 'Brand did not found'})
+
+    # try get data
+    try:
+        category_name = clean(request.json.get('name'))
+    except TypeError:
+        return jsonify({'error', 'Brand can\'t be empty'})
+
+    # update category
+    update_category(cat_id, category_name)
+
+    # return list of categories
+    cats = [item.serialize for item in get_categories()]
+    return jsonify(cats), 200
+
+
 # TODO: Get auth token
 @app.route('/token')
 @auth.login_required
@@ -642,8 +669,8 @@ def item_page(item_id):
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def default(path):
-    index = open(BASE_DIR + '/public/app/index.html', 'r').read()
-    return index
+
+    return 'path: %s' % path
 
 
 if __name__ == '__main__':

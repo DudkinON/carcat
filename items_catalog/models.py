@@ -516,4 +516,10 @@ def category_exist(cat_id):
     return session.query(Category).filter_by(id=cat_id).first() is not None
 
 
+def update_category(cat_id, name):
+    cat = session.query(Category).filter_by(id=cat_id).first()
+    cat.name = name
+    session.commit()
+
+
 Base.metadata.create_all(engine)

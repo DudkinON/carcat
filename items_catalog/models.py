@@ -502,10 +502,23 @@ def remove_images_by_item_id(item_id):
 
 
 def category_exist(cat_id):
+    """
+    Check if category exist
+
+    :param cat_id:
+    :return:
+    """
     return session.query(Category).filter_by(id=cat_id).first() is not None
 
 
 def update_category(cat_id, name):
+    """
+    Update category
+
+    :param cat_id:
+    :param name:
+    :return void:
+    """
     cat = session.query(Category).filter_by(id=cat_id).first()
     cat.name = name
     session.commit()

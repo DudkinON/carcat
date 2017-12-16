@@ -352,17 +352,6 @@ def get_categories():
     return session.query(Category).all()
 
 
-def update_category(category_id, name):
-    """
-    Change category name
-
-    :param category_id:
-    :param name:
-    :return void:
-    """
-    session.query(Category).filter_by(id=category_id).first().update(name)
-
-
 def remove_category(category_id):
     """
     Remove category

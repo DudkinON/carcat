@@ -8,7 +8,7 @@ from models import get_categories, get_items, get_user_by_email, check_category
 from models import user_exist, update_user, remove_user, get_user_by_id
 from models import add_images, get_items_by_user, update_item, get_item_by_id
 from models import delete_item, email_exist, get_images_by_item_id
-from models import remove_images_by_item_id
+from models import remove_images_by_item_id, category_exist
 from data_control import email_is_valid, get_unique_str, get_path, allowed_file
 from settings import *
 from flask_httpauth import HTTPBasicAuth
@@ -256,7 +256,7 @@ def edit_category(cat_id):
         return jsonify({'error': "You do not have permission to do that"}), 200
 
     # check if category exist
-    if not get_category_by_id(cat_id):
+    if not category_exist(cat_id):
         return jsonify({'error', 'Brand did not found'})
 
     # try get data

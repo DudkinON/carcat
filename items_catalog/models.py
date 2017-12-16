@@ -512,4 +512,8 @@ def remove_images_by_item_id(item_id):
     session.commit()
 
 
+def category_exist(cat_id):
+    return session.query(Category).filter_by(id=cat_id).first() is not None
+
+
 Base.metadata.create_all(engine)

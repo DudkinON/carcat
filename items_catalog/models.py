@@ -525,6 +525,12 @@ def update_category(cat_id, name):
 
 
 def delete_category(cat_id):
+    """
+    Remove category from database
+
+    :param cat_id:
+    :return void:
+    """
     session.query(Image).filter_by(id=cat_id).delete()
     session.commit()
 

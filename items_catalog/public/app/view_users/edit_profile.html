@@ -29,6 +29,9 @@
     <div class="alert alert-danger" role="alert"
          ng-show="ProfileEditController.error">{{ProfileEditController.error}}
     </div>
+    <div class="alert alert-success" role="alert"
+         ng-show="ProfileEditController.message">{{ProfileEditController.message}}
+    </div>
     <div class="user-data-container">
       <input type="text" class="empty-input" placeholder="first name"
              ng-model="ProfileEditController.user.first_name">

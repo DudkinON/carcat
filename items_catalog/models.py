@@ -55,7 +55,7 @@ class User(Base):
     @property
     def get_full_name(self):
         """
-        Return ful name (first and last name)
+        Return full name (first and last name)
 
         :return string:
         """
@@ -215,6 +215,16 @@ def user_exist(username):
     return session.query(User).filter_by(username=username).first() is not None
 
 
+def email_exist(email):
+    """
+    Check user exist
+
+    :param email:
+    :return bool:
+    """
+    return session.query(User).filter_by(email=email).first() is not None
+
+
 def get_user_by_email(email):
     """
     Return user by email or None
@@ -289,7 +299,7 @@ def update_user(usr):
     :param usr:
     :return object:
     """
-    user = session.query(User).filter_by(username=usr['username']).first()
+    user = session.query(User).filter_by(id=usr['uid']).first()
     user.username = usr['username']
     user.first_name = usr['first_name']
     user.last_name = usr['last_name']
@@ -340,17 +350,6 @@ def get_categories():
     :return object:
     """
     return session.query(Category).all()
-
-
-def update_category(category_id, name):
-    """
-    Change category name
-
-    :param category_id:
-    :param name:
-    :return void:
-    """
-    session.query(Category).filter_by(id=category_id).first().update(name)
 
 
 def remove_category(category_id):
@@ -479,6 +478,61 @@ def add_images(images, item_id):
 
     # return list of images
     return session.query(Image).filter_by(product=item_id).all()
+
+
+def get_images_by_item_id(item_id):
+    """
+    return list of images by item id
+
+    :param item_id:
+    :return object:
+    """
+    return session.query(Image).filter_by(product=item_id).all() or []
+
+
+def remove_images_by_item_id(item_id):
+    """
+    Remove images
+
+    :param item_id:
+    :return:
+    """
+    session.query(Image).filter_by(product=item_id).delete()
+    session.commit()
+
+
+def category_exist(cat_id):
+    """
+    Check if category exist
+
+    :param cat_id:
+    :return:
+    """
+    return session.query(Category).filter_by(id=cat_id).first() is not None
+
+
+def update_category(cat_id, name):
+    """
+    Update category
+
+    :param cat_id:
+    :param name:
+    :return void:
+    """
+    cat = session.query(Category).filter_by(id=cat_id).first()
+    cat.name = name
+    session.commit()
+
+
+def delete_category(cat_id):
+    """
+    Remove category from database
+
+    :param cat_id:
+    :return void:
+    """
+    session.query(Image).filter_by(id=cat_id).delete()
+    session.commit()
 
 
 Base.metadata.create_all(engine)

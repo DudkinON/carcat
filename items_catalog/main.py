@@ -671,13 +671,6 @@ def item_page(item_id):
     return jsonify(item.serialize), 200
 
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def default(path):
-
-    return 'path: %s' % path
-
-
 if __name__ == '__main__':
     app.debug = True
     app.run(host='0.0.0.0')

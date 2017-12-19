@@ -524,4 +524,9 @@ def update_category(cat_id, name):
     session.commit()
 
 
+def delete_category(cat_id):
+    session.query(Image).filter_by(id=cat_id).delete()
+    session.commit()
+
+
 Base.metadata.create_all(engine)

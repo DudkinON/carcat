@@ -9,6 +9,7 @@ from models import user_exist, update_user, remove_user, get_user_by_id
 from models import add_images, get_items_by_user, update_item, get_item_by_id
 from models import delete_item, email_exist, get_images_by_item_id
 from models import remove_images_by_item_id, category_exist, update_category
+from models import delete_category
 from data_control import email_is_valid, get_unique_str, get_path, allowed_file
 from settings import *
 from flask_httpauth import HTTPBasicAuth
@@ -246,7 +247,7 @@ def add_category():
     return jsonify(cats), 200
 
 
-# TODO: Add new category
+# TODO: Edit category
 @app.route('/category/edit/<int:cat_id>', methods=['POST'])
 @auth.login_required
 def edit_category(cat_id):
@@ -276,6 +277,26 @@ def edit_category(cat_id):
     # return list of categories
     cats = [item.serialize for item in get_categories()]
     return jsonify(cats), 200
+
+
+# TODO: Remove category
+@app.route('/category/delete/<int:cat_id>')
+@auth.login_required
+def remove_category(cat_id):
+
+    # check user status
+    if g.user.status != 'admin':
+        return jsonify({'error': "You do not have permission to do that"}), 200
+
+    # check if category exist
+    if not category_exist(cat_id):
+        return jsonify({'error', 'Brand did not found'})
+
+    # remove category
+    delete_category(cat_id)
+
+    categories_list = get_categories()
+    return categories_list
 
 
 # TODO: Get auth token

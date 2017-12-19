@@ -283,6 +283,12 @@ def edit_category(cat_id):
 @app.route('/category/delete/<int:cat_id>')
 @auth.login_required
 def remove_category(cat_id):
+    """
+    Validate user, if category exist remove it.
+
+    :param cat_id:
+    :return string: JSON
+    """
 
     # check user status
     if g.user.status != 'admin':
@@ -295,8 +301,8 @@ def remove_category(cat_id):
     # remove category
     delete_category(cat_id)
 
-    categories_list = get_categories()
-    return categories_list
+    categories_list = [item.serialize for item in get_categories()]
+    return jsonify(categories_list)
 
 
 # TODO: Get auth token

@@ -1,0 +1,9 @@
+{
+  "facebook": {
+    "app_id": "262886084239386",
+    "app_secret": "266e847dd5f0f7584b04f2bc6a3aa14d",
+    "access_token_url": "https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s",
+    "user_info_url": "https://graph.facebook.com/v2.8/me?access_token=%s&fields=name,id,email",
+    "picture_url": "https://graph.facebook.com/v2.8/me/picture?access_token=%s&redirect=0&height=200&width=200"
+  }
+}

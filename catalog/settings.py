@@ -6,8 +6,8 @@ EXTENSIONS = ['png', 'bmp', 'jpg', 'jpeg', 'gif']
 
 
 DB = {
-    'user': 'DB_USERNAME',
-    'password': 'DB_PASSWORD',
-    'database': 'DB_NAME',
-    'host': 'DB_HOST'  # 127.0.0.1:5432
+    'user': 'carcat',
+    'password': 'G149wf92riW!',
+    'database': 'carcat',
+    'host': '127.0.0.1:5432'
 }

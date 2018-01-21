@@ -37,7 +37,7 @@ class User(Base):
     first_name = Column(String(25), default=None)
     last_name = Column(String(25), default=None)
     email = Column(String(40))
-    password_hash = Column(String(64))
+    password_hash = Column(String(250))
     status = Column(String(10), default='user')
 
     def hash_password(self, password):

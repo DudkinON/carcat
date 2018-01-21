@@ -554,7 +554,7 @@
             user.put("status", "user");
             resetData();
             $scope.alert(data.message, 'success');
-            $window.location.href = '/login';
+            $location.url('/login');
           }
         }, function (data) {
           var message = 'Server error, try it later';

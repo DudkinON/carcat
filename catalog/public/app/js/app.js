@@ -80,7 +80,9 @@
         return $http({
           method: 'GET',
           url: url,
-          headers: {'Authorization': 'Basic ' + credentials}
+          headers: {
+            'Authorization': 'Basic ' + credentials,
+          }
         }).then(success);
       }
     }

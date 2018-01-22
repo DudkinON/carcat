@@ -1,0 +1,11 @@
+.idea
+.DS_Store
+catalog/models.pyc
+catalog/settings.pyc
+catalog/public/yarn.lock
+catalog/public/bower.json
+catalog/public/package.json
+catalog/client_secrets.json
+catalog/facebook.json
+/letsencrypt/
+
